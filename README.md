@@ -1,6 +1,6 @@
 
 
-Wallee Payment for Shopware 6
+Wallee Payment for Gambio 4
 =============================
 
 The Wallee Payment plugin wraps around the Wallee API. This library facilitates your interaction with various services such as transactions.
@@ -8,61 +8,26 @@ The Wallee Payment plugin wraps around the Wallee API. This library facilitates 
 ## Requirements
 
 - PHP 7.4 and above
-- Shopware 6.4 and above
+- Gambio 4 and above
 
 ## Installation
 
-You can use **Composer** or **install manually**
-
-### Composer
-
-The preferred method is via [composer](https://getcomposer.org). Follow the
-[installation instructions](https://getcomposer.org/doc/00-intro.md) if you do not already have
-composer installed.
-
-Once composer is installed, execute the following command in your project root to install this library:
-
-```bash
-composer require wallee/shopware-6
-php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache WalleePayment
-```
-
-#### Update via composer
-```bash
-composer update wallee/shopware-6
-php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache WalleePayment
-```
+**Please install it manually**
 
 ### Manual Installation
 
 Alternatively you can download the package in its entirety. The [Releases](../../releases) page lists all stable versions.
 
-Uncompress the zip file you download, and include the autoloader in your project:
-
-```bash
-# unzip to ShopwareInstallDir/custom/plugins/WalleePayment
-composer require wallee/sdk 
-php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache WalleePayment
-```
+Uncompress the zip file you download, and include it to your Gambio shop:
 
 ## Usage
 The library needs to be configured with your account's space id, user id, and application key which are available in your Wallee
 account dashboard.
 
-### Logs and debugging
-To view the logs please run the command below:
-```bash
-cd shopware/install/dir
-tail -f var/log/wallee_payment*.log
-```
-
 ## Documentation
 
-[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.0/docs/en/documentation.html)
+[Documentation](https://github.com/wallee-payment/gambio-4/blob/master/docs/en/documentation.html))
 
 ## License
 
-Please see the [license file](https://github.com/wallee-payment/shopware-6/blob/master/LICENSE.txt) for more information.
+Please see the [license file](https://github.com/wallee-payment/gambio-4/blob/master/LICENSE.txt) for more information.

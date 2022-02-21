@@ -18,7 +18,7 @@ The Wallee Payment plugin wraps around the Wallee API. This library facilitates 
 
 Alternatively you can download the package in its entirety. The [Releases](../../releases) page lists all stable versions.
 
-Uncompress the zip file you download, and include it to your Gambio shop:
+Uncompress the zip file you download, and include it to your Gambio shop
 
 ## Usage
 The library needs to be configured with your account's space id, user id, and application key which are available in your Wallee

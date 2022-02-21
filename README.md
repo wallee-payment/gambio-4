@@ -26,7 +26,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://github.com/wallee-payment/gambio-4/blob/master/docs/en/documentation.html))
+[Documentation](https://github.com/wallee-payment/gambio-4/blob/master/docs/en/documentation.html)
 
 ## License
 

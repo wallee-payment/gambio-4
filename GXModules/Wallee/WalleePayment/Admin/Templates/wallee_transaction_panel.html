@@ -1,0 +1,189 @@
+{load_language_text section="{$translateSection}"}
+
+<div id="transaction-control">
+    <div id="loader-block" style="margin: 0 auto; text-align: center">
+        <img id="loading" src="/images/loading.gif" style="display: none"/>
+    </div>
+    <div>
+        <button {if $transactionState !== $authorizedState}disabled{/if} id="Complete" class="btn changeTransactionStatus">{$txt.transaction_complete}</button>
+        <button {if $transactionState !== $authorizedState}disabled{/if} id="Cancel" class="btn changeTransactionStatus">{$txt.transaction_cancel}</button>
+        <button {if $transactionState !== $fulfillState && $transactionState !== "REFUNDED" && $transactionState !== "PARTIALLY_REFUNDED" && $transactionState !== "PAID"}disabled{/if} id="Refund" class="btn">{$txt.refunds}</button>
+        <button {if $transactionState !== $fulfillState && $transactionState !== "REFUNDED" && $transactionState !== "PARTIALLY_REFUNDED" && $transactionState !== "PAID"}disabled{/if} id="Invoice" target="_blank" class="btn" onclick="window.open('/admin/admin.php?do={$moduleName}OrderAction/DownloadFile&orderId={$orderId}&action=invoice', '_blank');">{$txt.download_invoice}</button>
+        <button {if $transactionState !== $fulfillState && $transactionState !== "REFUNDED" && $transactionState !== "PARTIALLY_REFUNDED" && $transactionState !== "PAID"}disabled{/if} id="PackageSlip" target="_blank" class="btn" onclick="window.open('/admin/admin.php?do={$moduleName}OrderAction/DownloadFile&orderId={$orderId}&action=package-slip', '_blank');">{$txt.download_package_slip}</button>
+    </div>
+    <div id="refund-form" style="display: none">
+
+        {if $transactionState !== "PAID" && $transactionState !== "REFUNDED" && $amountToBeRefunded > 0}
+            <div>
+                <h2>{$txt.make_a_refund}</h2>
+                <b>{$txt.amount_to_refund}:</b>   <input type="text" id="refund-amount" value="{$amountToBeRefunded}"/>
+                <a type="button" {if $transactionState !== $fulfillState && $transactionState !== "REFUNDED" && $transactionState !== "PARTIALLY_REFUNDED"}disabled{/if} id="make-refund" class="btn" href=javascript:void(null);"">{$txt.refund_now}</a>
+            </div>
+        {/if}
+
+        <div>
+            <h2>{$txt.refunds} {$xtPrice->xtcFormat($totalSumOfRefunds, true)} / {$xtPrice->xtcFormat($totalOrderAmount, true)}</h2>
+
+            <table id="refunds-details-table" style="max-width: 400px;">
+                <thead>
+                <tr>
+                    <th class="text-right">
+                        <div class="grid">
+                            <div class="span12"></div>
+                        </div>
+                    </th>
+                    <th class="text-right">
+                        <div class="grid">
+                            <div class="span12">
+                                {$txt.amount}:
+                            </div>
+                        </div>
+                    </th>
+                    <th class="text-right">
+                        <div class="grid">
+                            <div class="span12">
+                                {$txt.refund_date}
+                            </div>
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {foreach $refunds as $key => $refund}
+                    <tr>
+                        <td class="text-right">
+                            <div class="grid">
+                                <div class="span12">{$key + 1}</div>
+                            </div>
+                        </td>
+                        <td class="text-right">
+                            <div class="grid">
+                                <div class="span12">{$xtPrice->xtcFormat($refund['amount'], true)}</div>
+                            </div>
+                        </td>
+                        <td class="text-right">
+                            <div class="grid">
+                                <div class="span12">{$refund['created_at']}</div>
+                            </div>
+                        </td>
+                    </tr>
+                {/foreach}
+                </tbody>
+                <tfooter>
+                    <tr>
+                        <th class="text-right">
+                            <div class="grid">
+                                <div class="span12">{$txt.total}</div>
+                            </div>
+                        </th>
+                        <th class="text-right">
+                            <div class="grid">
+                                <div class="span12">{$xtPrice->xtcFormat($totalSumOfRefunds, true)}</div>
+                            </div>
+                        </th>
+                        <th class="text-right">
+                            <div class="grid">
+                                <div class="span12"></div>
+                            </div>
+                        </th>
+                    </tr>
+                </tfooter>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        var request;
+        $(".changeTransactionStatus").on("click", function(event) {
+            event.preventDefault();
+
+            if (request) {
+                request.abort();
+            }
+
+            var loader = $('#loading');
+            loader.show();
+            var action = $(this).attr('id');
+            var $button = $(this);
+            $button.prop("disabled", true);
+
+            request = $.ajax({
+                url: "/admin/admin.php?do={$moduleName}OrderAction/ChangeTransactionStatus",
+                type: "post",
+                data: {
+                    'orderId': '{$orderId}',
+                    'action': action
+                }
+            });
+
+            request.done(function (response) {
+                if (response) {
+                    loader.hide();
+                    $button.prop("disabled", false);
+                    alert(response);
+                } else {
+                    setTimeout(function() {
+                        loader.hide();
+                        location.reload();
+                    }, 3000);
+                }
+
+                return false;
+            });
+
+            request.fail(function () {
+                $button.prop("disabled", false);
+            });
+        });
+
+        $("#Refund").on("click", function(event) {
+            event.preventDefault();
+
+            $('#refund-form').toggle();
+        });
+
+        $("#make-refund").on("click", function(event) {
+            event.preventDefault();
+
+            if (request) {
+                request.abort();
+            }
+
+            var loader = $('#loading');
+            loader.show();
+            var action = $(this).attr('id');
+            var $button = $(this);
+            $button.prop("disabled", true);
+
+            request = $.ajax({
+                url: "/admin/admin.php?do={$moduleName}OrderAction/Refund",
+                type: "post",
+                data: {
+                    'orderId': '{$orderId}',
+                    'amount': $('#refund-amount').val()
+                }
+            });
+
+            request.done(function (response) {
+                if (response) {
+                    loader.hide();
+                    $button.prop("disabled", false);
+                    alert(response);
+                } else {
+                    setTimeout(function() {
+                        loader.hide();
+                        location.reload();
+                    }, 3000);
+                }
+
+                return false;
+            });
+
+            request.fail(function (jqXHR, textStatus, errorThrown){
+                $button.prop("disabled", false);
+            });
+        });
+    });
+</script>

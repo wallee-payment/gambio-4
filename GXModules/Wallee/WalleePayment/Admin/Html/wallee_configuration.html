@@ -1,0 +1,121 @@
+{extends file="get_usermod:layouts/main/layout.html"}
+
+{block name="content"}
+{load_language_text section="{$content.translate_section}"}
+{load_language_text section="module_center_module" name="mcm"}
+
+<div class="breakpoint-small">
+	<form action="{$content.action_save_configuration}" method="POST" class="form-configuration">
+		<input type="hidden" name="pageToken" value="{$content.pageToken}">
+		<div class="form-horizontal">
+			<fieldset>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">{$txt.status}</label>
+					<div class="col-sm-8" data-gx-widget="switcher">
+						<input type="hidden" name="configuration[active]" value="0" />
+						<input type="checkbox" id="configuration[active]" value="1" name="configuration[active]" class="form-control" {($content.configuration['active'] == '1') ? 'checked="checked"' : ''} />
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>{$txt.configuration}</legend>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">{$txt.space_id}</label>
+					<div class="col-sm-7">
+						<input type="text" class="form-control" name="configuration[space_id]"
+						       id="space_id" value="{$content.configuration['space_id']}" required>
+					</div>
+					<div class="col-sm-1">
+						<span class="tooltip-icon" data-gx-widget="tooltip_icon" data-tooltip_icon-type="info">{$txt.space_id_tooltip}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">{$txt.user_id}</label>
+					<div class="col-sm-7">
+						<input type="text" class="form-control" name="configuration[user_id]"
+							   id="user_id" value="{$content.configuration['user_id']}" required>
+					</div>
+					<div class="col-sm-1">
+						<span class="tooltip-icon" data-gx-widget="tooltip_icon" data-tooltip_icon-type="info">{$txt.user_id_tooltip}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">{$txt.application_key}</label>
+					<div class="col-sm-7">
+						<input type="password" class="form-control" name="configuration[application_key]"
+							   id="application_key" value="{$content.configuration['application_key']}" required>
+					</div>
+					<div class="col-sm-1">
+						<span class="tooltip-icon" data-gx-widget="tooltip_icon" data-tooltip_icon-type="info">{$txt.application_key_tooltip}</span>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>{$txt.options}</legend>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">{$txt.space_view_id}</label>
+					<div class="col-sm-7">
+						<input type="text" class="form-control" name="configuration[space_view_id]"
+							   id="space_view_id" value="{$content.configuration['space_view_id']}">
+					</div>
+					<div class="col-sm-1">
+						<span class="tooltip-icon" data-gx-widget="tooltip_icon" data-tooltip_icon-type="info">{$txt.space_view_id_tooltip}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">{$txt.integration}</label>
+					<div class="col-sm-7">
+						<select class="form-control" name="configuration[integration]">
+							{foreach from=$content.integrations item=integration}
+							<option value="{$integration.id}"{if $content.configuration['integration'] === $integration.id} selected{/if}>{$integration.name}</option>
+							{/foreach}
+						</select>
+					</div>
+					<div class="col-sm-1">
+						<span class="tooltip-icon" data-gx-widget="tooltip_icon" data-tooltip_icon-type="info">{$txt.integration_tooltip}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label" for="">{$txt.line_item_consistency}</label>
+					<div class="col-sm-7" data-gx-widget="switcher">
+						<input type="hidden" name="configuration[line_item_consistency]" value="0" />
+						<input type="checkbox" id="configuration[line_item_consistency]" value="1" name="configuration[line_item_consistency]" class="form-control" {($content.configuration['line_item_consistency'] == '1') ? 'checked="checked"' : ''} />
+					</div>
+					<div class="col-sm-1">
+						<span class="tooltip-icon" data-gx-widget="tooltip_icon" data-tooltip_icon-type="info">{$txt.line_item_consistency_tooltip}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label" for="">{$txt.send_order_confirmation_email}</label>
+					<div class="col-sm-7" data-gx-widget="switcher">
+						<input type="hidden" name="configuration[send_order_confirmation_email]" value="0" />
+						<input type="checkbox" id="configuration[send_order_confirmation_email]" value="1" name="configuration[send_order_confirmation_email]" class="form-control" {($content.configuration['send_order_confirmation_email'] == '1') ? 'checked="checked"' : ''} />
+					</div>
+					<div class="col-sm-1">
+						<span class="tooltip-icon" data-gx-widget="tooltip_icon" data-tooltip_icon-type="info">{$txt.send_order_confirmation_email_tooltip}</span>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>{$txt.storefront_options}</legend>
+				<div class="form-group">
+					<label class="col-sm-4 control-label" for="">{$txt.invoice_download}</label>
+					<div class="col-sm-7" data-gx-widget="switcher">
+						<input type="hidden" name="configuration[invoice_download]" value="0" />
+						<input type="checkbox" id="configuration[invoice_download]" value="1" name="configuration[invoice_download]" class="form-control" {($content.configuration['invoice_download'] == '1') ? 'checked="checked"' : ''} />
+					</div>
+					<div class="col-sm-1">
+						<span class="tooltip-icon" data-gx-widget="tooltip_icon" data-tooltip_icon-type="info">{$txt.invoice_download_tooltip}</span>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+		
+		<div class="row">
+			<div class="col-sm-12">
+				<button type="submit" class="btn btn-primary pull-right">{$txt.save_configuration}</button>
+			</div>
+		</div>
+	</form>
+</div>
+{/block}

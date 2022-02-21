@@ -1,0 +1,39 @@
+{if $integration === 'iframe'}
+    {foreach $transactionPossiblePaymentMethod as $whiteLabelMachineNameData}
+        <div class="card checkout-card">
+            <div class="card-body">
+                <div class="card-title">
+                    {$whiteLabelMachineNameData->getName()}
+                </div>
+                <div id="{$paymentMachineName}-payment-panel"
+                     class="{$paymentMachineName}-payment-panel"
+                     data-{$paymentMachineName}-checkout-plugin="true"
+                     data-id="{$whiteLabelMachineNameData->getId()}">
+                    <div id="{$paymentMachineName}Loader"><div></div></div>
+                    <input value="false" type="hidden" name="{$paymentMachineName}_payment_handler_validation_status"
+                           form="confirmOrderForm">
+                    <div id="{$paymentMachineName}-payment-iframe"
+                         class="{$paymentMachineName}-payment-iframe"></div>
+                </div>
+            </div>
+        </div>
+    {/foreach}
+{/if}
+
+<div class="checkout-aside-action">
+    <form name="confirmOrderForm" id="confirmOrderForm">
+        <input type="hidden" id="cartRecreateUrl" value="/" />
+        <input type="hidden" id="checkoutUrl" value="/checkout_confirmation.php" />
+        <button id="confirmFormSubmit"
+                class="btn btn-primary btn-block btn-lg"
+                form="confirmOrderForm"
+                disabled
+                type="submit">
+            {$translations.pay}
+        </button>
+        <button type="button" class="btn btn-outline-primary header-minimal-back-to-shop-button" id="{$paymentMachineName}OrderCancel">{$translations.cancel}</button>
+    </form>
+</div>
+
+<script src="{$iframeJsUrl}"></script>
+<script src="{$appJsUrl}"></script>

@@ -1,6 +1,6 @@
 
 
-Wallee Payment for Gambio 4
+Wallee Payment for Gambio 4 Alpha version
 =============================
 
 The Wallee Payment plugin wraps around the Wallee API. This library facilitates your interaction with various services such as transactions.
@@ -26,7 +26,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://github.com/wallee-payment/gambio-4/blob/master/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/0.0.1-alpha/docs/en/documentation.html)
 
 ## License
 

@@ -29,7 +29,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '937ba698ccbadc3d1f83a5fb380aaa58a295b7df',
+    'reference' => '158e82cf20a1c39cd1822dd083a2b23100bc3208',
     'name' => '__root__',
   ),
   'versions' => 
@@ -41,7 +41,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '937ba698ccbadc3d1f83a5fb380aaa58a295b7df',
+      'reference' => '158e82cf20a1c39cd1822dd083a2b23100bc3208',
     ),
     'wallee/sdk' => 
     array (

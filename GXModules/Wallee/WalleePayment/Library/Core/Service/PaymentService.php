@@ -108,15 +108,9 @@ class PaymentService
 				'titles' => $titles,
 				'descriptions' => $descriptions
 			];
-
-			// We can allow this manually for the future
-			//$this->downloadPaymentMethodLogo($paymentMethod->getResolvedImageUrl(), $slug);
 		}
 
 		$this->configuration->set('payment_methods', \json_encode($data));
-
-		$this->updateLanguageFiles($translations);
-
 		$this->clearCache();
 	}
 
@@ -211,49 +205,5 @@ class PaymentService
 		});
 
 		return $paymentMethodConfigurations;
-	}
-
-	private function updateLanguageFiles(array $translations)
-	{
-		$path = $this->rootDir . 'GXModules/Wallee/WalleePayment/Admin/';
-		foreach ($translations as $language => $lines) {
-			if (!is_dir($path . '/TextPhrases/' . $language)) {
-				continue;
-			}
-
-			$fileName = $path . '/TextPhrases/' . $language . '/wallee_payment.lang.inc.php';
-			$content = '';
-
-			foreach ($lines as $key => $text) {
-				$content .= "'" . $key . "' => " . "'" . $text . "',\n";
-			}
-
-			$fp = fopen($fileName, 'w+');
-			fwrite($fp, '<?php declare(strict_types = 1);' . "\n");
-			fwrite($fp, '$t_language_text_section_content_array = [' . "\n");
-			fwrite($fp, $content);
-			fwrite($fp, "];\n");
-			fwrite($fp, "\n");
-			fclose($fp);
-		}
-	}
-
-	/**
-	 * @param string $url
-	 * @param $slug
-	 */
-	private function downloadPaymentMethodLogo(string $url, $slug): void
-	{
-		try {
-			$ch = curl_init($url);
-			$fp = fopen($this->rootDir . '/images/icons/payment/' . $slug . '.svg', 'wb');
-			curl_setopt($ch, CURLOPT_FILE, $fp);
-			curl_setopt($ch, CURLOPT_HEADER, 0);
-			curl_exec($ch);
-			curl_close($ch);
-			fclose($fp);
-		} catch (\Exception $e) {
-			$GLOBALS['messageStack']->add_session($this->languageTextManager->get_text('error_downloading_logo_please_check_permissions', 'wallee'), 'error');
-		}
 	}
 }

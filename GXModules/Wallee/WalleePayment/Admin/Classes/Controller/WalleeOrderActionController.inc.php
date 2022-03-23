@@ -3,20 +3,29 @@
 use GXModules\WalleePayment\Library\Core\Settings\Struct\Settings;
 
 use Wallee\Sdk\{
-	Model\LineItem,
 	Model\RefundCreate,
 	Model\RefundType,
-	Model\Transaction,
 	Model\TransactionState
 };
-use WalleePayment\Core\Util\Exception\InvalidPayloadException;
+
+use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeTransactionModel;
 
 class WalleeOrderActionController extends AdminHttpViewController
 {
+	protected const ACTION_COMPLETE = 'complete';
+	protected const ACTION_CANCEL = 'cancel';
+	protected const ACTION_INVOICE = 'invoice';
+	protected const ACTION_PACKAGE_SLIP = 'package-slip';
+
 	/**
 	 * @var Settings $settings
 	 */
-	public $settings;
+	protected $settings;
+
+	/**
+	 * @var WalleeTransactionModel $transactionModel
+	 */
+	protected $transactionModel;
 
 	/**
 	 * @param HttpContextReaderInterface $httpContextReader
@@ -25,7 +34,8 @@ class WalleeOrderActionController extends AdminHttpViewController
 	 */
 	public function __construct(HttpContextReaderInterface $httpContextReader, HttpResponseProcessorInterface $httpResponseProcessor, ContentViewInterface $defaultContentView)
 	{
-		$this->settings = new Settings(MainFactory::create('WalleeStorage'));
+		$this->settings = new Settings();
+		$this->transactionModel = new WalleeTransactionModel();
 
 		parent::__construct($httpContextReader, $httpResponseProcessor, $defaultContentView);
 	}
@@ -38,20 +48,19 @@ class WalleeOrderActionController extends AdminHttpViewController
 	 */
 	public function actionChangeTransactionStatus(): HttpControllerResponse
 	{
-		$orderId = $this->_getPostData('orderId');
+		$orderId = (int)$this->_getPostData('orderId');
 		$action = $this->_getPostData('action');
-		$query = xtc_db_query("SELECT * FROM `wallee_transaction` WHERE order_id = " . xtc_db_input($orderId));
-		$transactionData = xtc_db_fetch_array($query);
 
+		$transaction = $this->transactionModel->getByOrderId($orderId);
 		$transactionStateAuthorized = TransactionState::AUTHORIZED;
-		if (strtolower($transactionData['state']) === strtolower($transactionStateAuthorized)) {
-			$transactionID = (int)$transactionData['transaction_id'];
+		if (strtolower($transaction->getState()) === strtolower($transactionStateAuthorized)) {
+			$transactionID = $transaction->getTransactionId();
 			switch ($action) {
-				case 'Complete':
+				case self::ACTION_COMPLETE:
 					$this->settings->getApiClient()->getTransactionCompletionService()->completeOnline($this->settings->getSpaceId(), $transactionID);
 					return new HttpControllerResponse('');
 
-				case 'Cancel':
+				case self::ACTION_CANCEL:
 					$this->settings->getApiClient()->getTransactionVoidService()->voidOnline($this->settings->getSpaceId(), $transactionID);
 					return new HttpControllerResponse('');
 
@@ -73,30 +82,28 @@ class WalleeOrderActionController extends AdminHttpViewController
 	 */
 	public function actionDownloadFile()
 	{
-		$orderID = $_GET['orderId'];
+		$orderId = (int)$_GET['orderId'];
 		$action = $_GET['action'];
-		$query = xtc_db_query("SELECT * FROM `wallee_transaction` WHERE order_id = " . xtc_db_input($orderID));
-		$transactionData = xtc_db_fetch_array($query);
+		$transaction = $this->transactionModel->getByOrderId($orderId);
 
-		$transactionStateFulfill = TransactionState::FULFILL;
+		$transactionStateFulfill = WalleeTransactionModel::TRANSACTION_STATE_FULFILL;
 
 		$allowedStates = [
-			TransactionState::FULFILL,
-			'REFUNDED',
-			'PARTIALY REFUNDED',
-			'PAID'
+			$transactionStateFulfill,
+			WalleeTransactionModel::TRANSACTION_STATE_REFUNDED,
+			WalleeTransactionModel::TRANSACTION_STATE_PARTIALLY_REFUNDED,
+			WalleeTransactionModel::TRANSACTION_STATE_PAID
 		];
 
-		if (\in_array(strtoupper($transactionData['state']), $allowedStates)) {
-			//if (strtolower($transactionData['state']) === strtolower($transactionStateFulfill)) {
-			$transactionID = (int)$transactionData['transaction_id'];
+		if (\in_array(strtoupper($transaction->getState()), $allowedStates)) {
+			$transactionID = $transaction->getTransactionId();
 
 			switch ($action) {
-				case 'invoice':
+				case self::ACTION_INVOICE:
 					$document = $this->settings->getApiClient()->getTransactionService()->getInvoiceDocument($this->settings->getSpaceId(), $transactionID);
 					break;
 
-				case 'package-slip':
+				case self::ACTION_PACKAGE_SLIP:
 					$document = $this->settings->getApiClient()->getTransactionService()->getPackingSlip($this->settings->getSpaceId(), $transactionID);
 					break;
 
@@ -126,37 +133,40 @@ class WalleeOrderActionController extends AdminHttpViewController
 		);
 	}
 
+	/**
+	 * @return HttpControllerResponse
+	 * @throws \Wallee\Sdk\ApiException
+	 * @throws \Wallee\Sdk\Http\ConnectionException
+	 * @throws \Wallee\Sdk\VersioningException
+	 */
 	public function actionRefund()
 	{
-		$orderId = $this->_getPostData('orderId');
+		$orderId = (int)$this->_getPostData('orderId');
 		$amount = floatval($this->_getPostData('amount'));
 
 		if ($amount <= 0) {
 			return new HttpControllerResponse('Amount should be greater than 0');
 		}
 
-		$query = xtc_db_query("SELECT * FROM `wallee_transaction` WHERE order_id = " . xtc_db_input($orderId));
-		$transactionData = xtc_db_fetch_array($query);
-
-		$transactionInfo = json_decode($transactionData['data'], true);
+		$transaction = $this->transactionModel->getByOrderId($orderId);
+		$transactionInfo = json_decode($transaction->getData(), true);
 		$transactionAmount = floatval($transactionInfo['info']['total']);
 
 		$transactionStateFulfill = TransactionState::FULFILL;
 		if (
-			strtolower($transactionData['state']) === strtolower($transactionStateFulfill) &&
+			strtolower($transaction->getState()) === strtolower($transactionStateFulfill) &&
 			$amount <= $transactionAmount
 		) {
-			$transactionID = (int)$transactionData['transaction_id'];
+			$transactionID = $transaction->getTransactionId();
 			$refundPayload = (new RefundCreate())
 				->setAmount(\round($amount, 2))
 				->setTransaction($transactionID)
 				->setMerchantReference((string)$orderId)
-				->setExternalId(uniqid('refund_', true), 100)
+				->setExternalId(uniqid('refund_', true))
 				->setType(RefundType::MERCHANT_INITIATED_ONLINE);
 
 			if (!$refundPayload->valid()) {
-				$this->logger->critical('Refund payload invalid:', $refundPayload->listInvalidProperties());
-				throw new InvalidPayloadException('Refund payload invalid:' . json_encode($refundPayload->listInvalidProperties()));
+				return new HttpControllerResponse('Refund payload invalid:' . json_encode($refundPayload->listInvalidProperties()));
 			}
 
 			$this->settings->getApiClient()->getRefundService()->refund($this->settings->getSpaceId(), $refundPayload);

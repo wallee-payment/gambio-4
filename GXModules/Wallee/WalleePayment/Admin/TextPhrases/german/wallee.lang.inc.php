@@ -51,4 +51,12 @@ $t_language_text_section_content_array = [
 	'amount' => 'Menge',
 	'refund_date' => 'Datum der Rückzahlung',
 	'total' => 'Gesamt',
+	'pay_order' => 'Bestellung bezahlen',
+	'billing_address' => 'Rechnungsadresse',
+	'shipping_address' => 'Lieferanschrift',
+	'configuration_status_title' => 'Status',
+	'configuration_status_desc' => '&nbsp;',
+	'configuration_sort_order_title' => 'Sortierreihenfolge',
+	'configuration_sort_order_desc' => '&nbsp;',
+	'would_you_like_to_enable_this_payment_method' => 'Möchten Sie diese Zahlungsmethode aktivieren?',
 ];

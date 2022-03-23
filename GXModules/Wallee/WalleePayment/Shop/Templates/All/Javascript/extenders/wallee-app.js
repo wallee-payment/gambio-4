@@ -81,7 +81,7 @@
             return false;
         },
 
-        /**
+        /**Wallee_CheckoutPaymentContentControl
          * Get iframe
          */
         getIframe: function () {
@@ -105,14 +105,14 @@
                         if (this.measureIframe(iframeContainer) < 1) {
                             WalleeCheckout.handler.submit();
                         }
-                    }, 100);
+                    }, 500);
                 });
                 WalleeCheckout.handler.setHeightChangeCallback((height)=>{
                     setTimeout(function () {
                         if(height < 1) {
                             WalleeCheckout.handler.submit();
                         }
-                    }, 100);
+                    }, 500);
                 });
                 WalleeCheckout.handler.create(iframeContainer);
             }

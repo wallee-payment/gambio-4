@@ -5,6 +5,19 @@
  */
 class WalleeStorage extends ConfigurationStorage
 {
+
+	const CONFIG_VERSION = 'version';
+	const CONFIG_ACTIVE = 'active';
+	const CONFIG_SPACE_ID = 'space_id';
+	const CONFIG_USER_ID = 'user_id';
+	const CONFIG_APPLICATION_KEY = 'application_key';
+	const CONFIG_SPACE_VIEW_ID = 'space_view_id';
+	const CONFIG_INTEGRATION = 'integration';
+	const CONFIG_LINE_ITEM_CONSISTENCY = 'line_item_consistency';
+	const CONFIG_SEND_ORDER_CONFIRMATION = 'send_order_confirmation_email';
+	const CONFIG_INVOICE_DOWNLOAD = 'invoice_download';
+	const CONFIG_PAYMENT_METHODS = 'payment_methods';
+
 	/**
 	 * namespace inside the configuration storage
 	 */
@@ -30,15 +43,16 @@ class WalleeStorage extends ConfigurationStorage
 	protected function setDefaultConfiguration()
 	{
 		$this->default_configuration = [
-			'active' => 1,
-			'space_id' => '',
-			'user_id' => '',
-			'application_key' => '',
-			'space_view_id' => 0,
-			'integration' => 'iframe',
-			'line_item_consistency' => 1,
-			'send_order_confirmation_email' => 1,
-			'invoice_download' => 1,
+			self::CONFIG_VERSION => 0,
+			self::CONFIG_ACTIVE => 1,
+			self::CONFIG_SPACE_ID => '',
+			self::CONFIG_USER_ID => '',
+			self::CONFIG_APPLICATION_KEY => '',
+			self::CONFIG_SPACE_VIEW_ID => 0,
+			self::CONFIG_INTEGRATION => 'iframe',
+			self::CONFIG_LINE_ITEM_CONSISTENCY => 1,
+			self::CONFIG_SEND_ORDER_CONFIRMATION => 1,
+			self::CONFIG_INVOICE_DOWNLOAD => 1,
 		];
 	}
 
@@ -82,19 +96,21 @@ class WalleeStorage extends ConfigurationStorage
 	public function set($p_key, $p_value)
 	{
 		switch ($p_key) {
-			case 'active';
-			case 'line_item_consistency';
-			case 'send_order_confirmation_email';
-			case 'invoice_download';
+			case self::CONFIG_ACTIVE;
+			case self::CONFIG_LINE_ITEM_CONSISTENCY;
+			case self::CONFIG_SEND_ORDER_CONFIRMATION;
+			case self::CONFIG_INVOICE_DOWNLOAD;
 				$value = (bool)$p_value ? '1' : '0';
 				break;
-			case 'space_id':
-			case 'user_id':
-			case 'space_view_id':
+			case self::CONFIG_VERSION:
+			case self::CONFIG_SPACE_ID:
+			case self::CONFIG_USER_ID:
+			case self::CONFIG_SPACE_VIEW_ID:
 				$value = (string)(int)$p_value;
 				break;
-			case 'application_key':
-			case 'integration':
+			case self::CONFIG_APPLICATION_KEY:
+			case self::CONFIG_INTEGRATION:
+			case self::CONFIG_PAYMENT_METHODS:
 				$value = strip_tags($p_value);
 				break;
 			default:

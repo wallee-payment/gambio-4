@@ -20,16 +20,19 @@ class wallee_ORIGIN {
 
 	public function __construct() {
 		global $order;
+		$this->code = 'wallee';
 		$this->languageTextManager = MainFactory::create_object(LanguageTextManager::class, array(), true);
-		$this->title = $this->languageTextManager->get_text($this->code . '_title', 'wallee_payment');
-		$this->description = $this->languageTextManager->get_text($this->code . '_description', 'wallee_payment');
+		$this->_initLanguageConstants();
+
+		$this->title = 'Wallee ' . $this->languageTextManager->get_text('payment', 'wallee');
+		$this->description = 'Wallee ' . $this->languageTextManager->get_text('description', 'wallee');
 		$this->sort_order = 'DESC';
 		$this->enabled = true;
 
 		if ((int)@constant('configuration/MODULE_PAYMENT_'.strtoupper($this->code).'_ORDER_STATUS_ID') > 0) {
-			$this->order_status = @constant('configuration/MODULE_PAYMENT_'.strtoupper($this->code).'_ORDER_STATUS_ID');
+			$this->order_status = @constant('MODULE_PAYMENT_'.strtoupper($this->code).'_ORDER_STATUS_ID');
 		}
-		$this->tmpStatus = (int)@constant('configuration/MODULE_PAYMENT_'.strtoupper($this->code).'_TMPORDER_STATUS_ID');
+		$this->tmpStatus = (int)@constant('MODULE_PAYMENT_'.strtoupper($this->code).'_TMPORDER_STATUS_ID');
 
 		if(is_object($order)) {
 			$this->update_status();
@@ -76,7 +79,7 @@ class wallee_ORIGIN {
 	}
 
 	public function payment_action() {
-		$redirectUrl = xtc_href_link('wallee_payment.php', 'payment_error=' . $this->code);
+		$redirectUrl = xtc_href_link('shop.php', 'do=WalleePayment/PaymentPage?payment_error=' . $this->code, 'SSL');
 
 		xtc_redirect($redirectUrl, '');
 	}
@@ -178,76 +181,19 @@ class wallee_ORIGIN {
 				'value' => 'True',
 				'type'  => 'switcher ',
 			],
-			'ALLOWED'              => [
-				'value' => '',
-			],
-			'ACCOUNT_ID'           => [
-				'value' => '99999',
-			],
-			'APPLICATION_ID'       => [
-				'value' => '99998',
-			],
-			'APPLICATION_PASSWORD' => [
-				'value' => '0',
-			],
-			'ADMINACTION_PASSWORD' => [
-				'value' => '5cfgRT34xsdedtFLdfHxj7tfwx24fe',
-			],
-			'SECURITY_KEY'         => [
-				'value' => 'testtest',
-			],
-			'AUTH_MODE'            => [
-				'value' => 'auth',
-				'type'  => 'auth-mode',
-			],
-			'ZONE'                 => [
-				'value' => '0',
-				'type'  => 'geo-zone',
-			],
-			'TMPORDER_STATUS_ID'   => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'ORDER_STATUS_ID'      => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'ERRORORDER_STATUS_ID' => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'CANCELORDER_STATUS_ID' => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'AUTHORIZED_STATUS_ID' => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'PROCESSING_STATUS_ID' => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'FULLFILL_STATUS_ID' => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'DERECOGNIZED_STATUS_ID' => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'REFUNDED_STATUS_ID' => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
-			'PARTIALLY_REFUNDED_STATUS_ID' => [
-				'value' => '',
-				'type'  => 'order-status',
-			],
 			'SORT_ORDER'           => [
 				'value' => '0',
 			],
 		];
+
+		/**
+		 * Creating checkbox for each payment method.
+		 */
+		foreach ($this->getPaymentMethods() as $method) {
+			define('MODULE_PAYMENT_WALLEE_' . strtoupper($method['id']) . '_TITLE', $method['titles'][$_SESSION['language']]);
+			define('MODULE_PAYMENT_WALLEE_' . strtoupper($method['id']) . '_DESC', $this->languageTextManager->get_text('would_you_like_to_enable_this_payment_method', 'wallee'));
+			$config[strtoupper($method['id'])] = ['value' => 'False','type'  => 'switcher'];
+		}
 
 		return $config;
 	}
@@ -310,6 +256,32 @@ class wallee_ORIGIN {
 			}
 		}
 		return true;
+	}
+
+	protected function getPaymentMethods()
+	{
+		$configuration = \MainFactory::create('WalleeStorage');
+		$paymentMethods = json_decode($configuration->get('payment_methods'), true);
+
+		return $paymentMethods;
+	}
+
+	protected function _initLanguageConstants()
+	{
+		$prefix = 'MODULE_PAYMENT_%s';
+
+		$constantNames = [
+			sprintf($prefix. '_STATUS_TITLE', strtoupper($this->code)),
+			sprintf($prefix. '_STATUS_DESC', strtoupper($this->code)),
+			sprintf($prefix. '_SORT_ORDER_TITLE', strtoupper($this->code)),
+			sprintf($prefix. '_SORT_ORDER_DESC', strtoupper($this->code)),
+			sprintf($prefix. '_SORT_ORDER_ASC', strtoupper($this->code)),
+		];
+
+		foreach ($constantNames as $constantName) {
+			$translationKey = 'configuration' . strtolower(str_replace(sprintf($prefix, strtoupper($this->code)), '', $constantName));
+			defined($constantName) or define($constantName, $this->languageTextManager->get_text($translationKey, 'wallee'));
+		}
 	}
 
 }

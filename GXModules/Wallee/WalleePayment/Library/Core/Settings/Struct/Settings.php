@@ -84,17 +84,19 @@ class Settings {
 	 */
 	public function __construct($configuration = null) {
 
-		if ($configuration) {
-			$this->setActive((bool) $configuration->get('active'));
-			$this->setUserId((int) $configuration->get('user_id'));
-			$this->setSpaceId((int) $configuration->get('space_id'));
-			$this->setSpaceViewId((int) $configuration->get('space_view_id'));
-			$this->setApplicationKey($configuration->get('application_key'));
-			$this->setIntegration($configuration->get('integration'));
-			$this->setLineItemConsistencyEnabled((bool) $configuration->get('line_item_consistency'));
-			$this->setConfirmationEmailSendEnabled((bool) $configuration->get('send_order_confirmation_email'));
-			$this->setStorefrontInvoiceDownloadEnabled((bool) $configuration->get('invoice_download'));
+		if ($configuration === null) {
+			$configuration = \MainFactory::create('WalleeStorage');
 		}
+
+		$this->setActive((bool) $configuration->get('active'));
+		$this->setUserId((int) $configuration->get('user_id'));
+		$this->setSpaceId((int) $configuration->get('space_id'));
+		$this->setSpaceViewId((int) $configuration->get('space_view_id'));
+		$this->setApplicationKey($configuration->get('application_key'));
+		$this->setIntegration($configuration->get('integration'));
+		$this->setLineItemConsistencyEnabled((bool) $configuration->get('line_item_consistency'));
+		$this->setConfirmationEmailSendEnabled((bool) $configuration->get('send_order_confirmation_email'));
+		$this->setStorefrontInvoiceDownloadEnabled((bool) $configuration->get('invoice_download'));
 	}
 
 	/**
@@ -108,7 +110,7 @@ class Settings {
 	/**
 	 * @param bool $confirmationEmailSendEnabled
 	 */
-	public function setConfirmationEmailSendEnabled(bool $confirmationEmailSendEnabled): void
+	protected function setConfirmationEmailSendEnabled(bool $confirmationEmailSendEnabled): void
 	{
 		$this->confirmationEmailSendEnabled = $confirmationEmailSendEnabled;
 	}
@@ -125,7 +127,7 @@ class Settings {
 	/**
 	 * @param string $integration
 	 */
-	public function setIntegration(string $integration): void
+	protected function setIntegration(string $integration): void
 	{
 		$this->integration = $integration;
 	}
@@ -141,7 +143,7 @@ class Settings {
 	/**
 	 * @param bool $lineItemConsistencyEnabled
 	 */
-	public function setLineItemConsistencyEnabled(bool $lineItemConsistencyEnabled): void
+	protected function setLineItemConsistencyEnabled(bool $lineItemConsistencyEnabled): void
 	{
 		$this->lineItemConsistencyEnabled = $lineItemConsistencyEnabled;
 	}
@@ -157,7 +159,7 @@ class Settings {
 	/**
 	 * @param bool $storefrontInvoiceDownloadEnabled
 	 */
-	public function setStorefrontInvoiceDownloadEnabled(bool $storefrontInvoiceDownloadEnabled): void
+	protected function setStorefrontInvoiceDownloadEnabled(bool $storefrontInvoiceDownloadEnabled): void
 	{
 		$this->storefrontInvoiceDownloadEnabled = $storefrontInvoiceDownloadEnabled;
 	}
@@ -173,7 +175,7 @@ class Settings {
 	/**
 	 * @param bool $active
 	 */
-	public function setActive(bool $active): void
+	protected function setActive(bool $active): void
 	{
 		$this->active = $active;
 	}
@@ -189,7 +191,7 @@ class Settings {
 	/**
 	 * @param int $spaceId
 	 */
-	public function setSpaceId(int $spaceId): void
+	protected function setSpaceId(int $spaceId): void
 	{
 		$this->spaceId = $spaceId;
 	}
@@ -209,7 +211,7 @@ class Settings {
 	/**
 	 * @param int $spaceViewId
 	 */
-	public function setSpaceViewId(int $spaceViewId): void
+	protected function setSpaceViewId(int $spaceViewId): void
 	{
 		$this->spaceViewId = $spaceViewId;
 	}
@@ -240,7 +242,7 @@ class Settings {
 	/**
 	 * @param int $userId
 	 */
-	public function setUserId(int $userId): void
+	protected function setUserId(int $userId): void
 	{
 		$this->userId = $userId;
 	}
@@ -256,7 +258,7 @@ class Settings {
 	/**
 	 * @param string $applicationKey
 	 */
-	public function setApplicationKey(string $applicationKey): void
+	protected function setApplicationKey(string $applicationKey): void
 	{
 		$this->applicationKey = $applicationKey;
 	}

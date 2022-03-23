@@ -9,8 +9,9 @@ use Wallee\Sdk\Model\{
 	LineItemCreate,
 	LineItemType,
 	TransactionCreate,
-	TransactionState
 };
+
+use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeTransactionModel;
 
 class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 {
@@ -43,16 +44,14 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		}
 
 		if ($this->tmp_order === false) {
-			$settings = new Settings(MainFactory::create('WalleeStorage'));
+			$settings = new Settings();
 			if (!$settings->isConfirmationEmailSendEnabled()) {
 				parent::send_order_mail();
 			}
 
-			// load the after_process function from the payment modules
 			$this->coo_payment->after_process();
 
-			$this->set_redirect_url(xtc_href_link('wallee_payment.php', '', 'SSL'));
-
+			$this->set_redirect_url(xtc_href_link("shop.php", 'do=WalleePayment/PaymentPage', 'SSL'));
 			return true;
 		}
 
@@ -64,13 +63,14 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 	 */
 	public function save_order()
 	{
-		$configuration = MainFactory::create('WalleeStorage');
-		$settings = new Settings($configuration);
+		$settings = new Settings();
 		$integration = $settings->getIntegration();
 
 		$orderId = $this->createOrder();
 		$createdTransactionId = $this->createRemoteTransaction($orderId, $settings);
-		$this->createLocalTransaction($settings, $createdTransactionId, $orderId);
+
+		$transactionModel = new WalleeTransactionModel();
+		$transactionModel->create($settings, $createdTransactionId, $orderId, (array)$this->coo_order);
 
 		$_SESSION['integration'] = $integration;
 		$_SESSION['transactionID'] = $createdTransactionId;
@@ -83,9 +83,9 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 			xtc_redirect($redirectUrl);
 			return;
 		}
-
 		$_SESSION['javascriptUrl'] = $this->getTransactionJavaScriptUrl($createdTransactionId);
 		$_SESSION['possiblePaymentMethod'] = $this->getTransactionPaymentMethod($settings, $createdTransactionId);
+		$_SESSION['orderTotal'] = $this->coo_order_total->output_array();
 	}
 
 	/**
@@ -112,25 +112,6 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 			$this->_getComment(),
 			$this->_getOrderStatusId(),
 			$this->_getOrderAddonValuesCollection());
-	}
-
-	/**
-	 * @param Settings $settings
-	 * @param string $transactionId
-	 * @param string $orderId
-	 */
-	private function createLocalTransaction(Settings $settings, string $transactionId, string $orderId): void
-	{
-		$insertData = [
-			'transaction_id' => $transactionId,
-			'data' => json_encode((array)$this->coo_order),
-			'payment_method' => $this->coo_order->info['payment_method'],
-			'order_id' => $orderId,
-			'space_id' => $settings->getSpaceId(),
-			'state' => TransactionState::PROCESSING,
-			'created_at' => date('Y-m-d H:i:s')
-		];
-		xtc_db_perform('wallee_transaction', $insertData, 'insert');
 	}
 
 	/**
@@ -193,8 +174,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 			'spaceId' => $settings->getSpaceId(),
 		]);
 		$transactionPayload->setSpaceViewId($settings->getSpaceViewId());
-		// TODO Change at the very end
-		$transactionPayload->setAutoConfirmationEnabled(true);
+		$transactionPayload->setAutoConfirmationEnabled(getenv('WALLEE_AUTOCONFIRMATION_ENABLED') ?: false);
 
 		$transactionPayload->setSuccessUrl(xtc_href_link(FILENAME_CHECKOUT_SUCCESS, '', 'SSL'));
 		$transactionPayload->setFailedUrl(xtc_href_link(FILENAME_CHECKOUT_PAYMENT . '?payment_error=true', '', 'SSL'));
@@ -238,8 +218,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 	 */
 	private function getTransactionJavaScriptUrl(int $transactionId): string
 	{
-		$configuration = MainFactory::create('WalleeStorage');
-		$settings = new Settings($configuration);
+		$settings = new Settings();
 
 		return $settings->getApiClient()->getTransactionIframeService()
 			->javascriptUrl($settings->getSpaceId(), $transactionId);

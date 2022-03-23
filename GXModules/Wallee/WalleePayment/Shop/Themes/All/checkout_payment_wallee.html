@@ -1,37 +1,132 @@
+{load_language_text section="wallee"}
+
+<h1>{$txt.pay_order}</h1>
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        <h2>{$txt.billing_address}</h2>
+        <span>{$order.billing.name}</span><br/>
+        {if $order.billing.company != ''}
+            <span>{$order.billing.company}</span><br/>
+        {/if}
+
+        <span>
+        {if $order.billing.house_number != ''}
+            {$order.billing.street_address} {$order.billing.house_number}
+        {else}
+            {$order.billing.street_address}
+        {/if}
+        </span><br/>
+
+        {if $order.billing.additional_address_info != ''}
+            {$order.billing.additional_address_info}<br/>
+        {/if}
+
+        {if $order.billing.suburb != ''}
+        <span>{$order.billing.suburb}</span><br/>
+        {/if}
+
+        <span>{$order.billing.postcode} {$order.billing.city}</span><br/>
+        <span>
+            {if $order.billing.state != ''}
+                {$order.billing.state},
+            {/if}
+            {$order.billing.country}
+        </span><br/>
+    </div>
+    <div class="col-md-6 col-xs-12">
+        <h2>{$txt.shipping_address}</h2>
+        <span>{$order.billing.name}</span><br/>
+        {if $order.billing.company != ''}
+        <span>{$order.billing.company}</span><br/>
+        {/if}
+
+        <span>
+        {if $order.delivery.house_number != ''}
+            {$order.delivery.street_address} {$order.delivery.house_number}
+        {else}
+            {$order.delivery.street_address}
+        {/if}
+        </span><br/>
+
+        {if $order.delivery.additional_address_info != ''}
+        {$order.delivery.additional_address_info}<br/>
+        {/if}
+
+        {if $order.delivery.suburb != ''}
+        <span>{$order.delivery.suburb}</span><br/>
+        {/if}
+
+        <span>{$order.delivery.postcode} {$order.delivery.city}</span><br/>
+        <span>
+            {if $order.delivery.state != ''}
+                {$order.delivery.state},
+            {/if}
+            {$order.delivery.country}
+        </span><br/>
+    </div>
+</div>
+<hr/>
+
 {if $integration === 'iframe'}
-    {foreach $transactionPossiblePaymentMethod as $whiteLabelMachineNameData}
+    {foreach $transactionPossiblePaymentMethod as $walleeData}
         <div class="card checkout-card">
             <div class="card-body">
                 <div class="card-title">
-                    {$whiteLabelMachineNameData->getName()}
+                    <b>{$walleeData->getName()}</b>
                 </div>
-                <div id="{$paymentMachineName}-payment-panel"
-                     class="{$paymentMachineName}-payment-panel"
-                     data-{$paymentMachineName}-checkout-plugin="true"
-                     data-id="{$whiteLabelMachineNameData->getId()}">
-                    <div id="{$paymentMachineName}Loader"><div></div></div>
-                    <input value="false" type="hidden" name="{$paymentMachineName}_payment_handler_validation_status"
+                <hr/>
+                <div id="wallee-payment-panel"
+                     class="wallee-payment-panel"
+                     data-wallee-checkout-plugin="true"
+                     data-id="{$walleeData->getId()}">
+                    <div id="walleeLoader"><div></div></div>
+                    <input value="false" type="hidden" name="wallee_payment_handler_validation_status"
                            form="confirmOrderForm">
-                    <div id="{$paymentMachineName}-payment-iframe"
-                         class="{$paymentMachineName}-payment-iframe"></div>
+                    <div id="wallee-payment-iframe"
+                         class="wallee-payment-iframe"></div>
                 </div>
             </div>
         </div>
     {/foreach}
 {/if}
 
+<hr/>
+{$productsData}
+
+<div class="row">
+    <div class="col-md-6 col-xs-12"></div>
+    <div class="col-md-6 col-xs-12">
+        <table class="order-total table table-responsive">
+            <tbody>
+            {foreach item=total_item from=$orderSummaryData}
+            <tr class="{if $smarty.foreach.total_block.last} order-total-last{/if}">
+                <td class="col-xs-6">
+                    {$total_item.title}
+                </td>
+                <td class="col-xs-6 text-right">
+                    {$total_item.text}
+                </td>
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<hr/>
+
 <div class="checkout-aside-action">
     <form name="confirmOrderForm" id="confirmOrderForm">
         <input type="hidden" id="cartRecreateUrl" value="/" />
-        <input type="hidden" id="checkoutUrl" value="/checkout_confirmation.php" />
+        <input type="hidden" id="checkoutUrl" value="/shop.php?do=WalleePayment/PaymentPage" />
         <button id="confirmFormSubmit"
                 class="btn btn-primary btn-block btn-lg"
                 form="confirmOrderForm"
                 disabled
                 type="submit">
-            {$translations.pay}
+            {$txt.pay}
         </button>
-        <button type="button" class="btn btn-outline-primary header-minimal-back-to-shop-button" id="{$paymentMachineName}OrderCancel">{$translations.cancel}</button>
+        <button style="visibility: hidden" type="button" class="btn btn-outline-primary header-minimal-back-to-shop-button" id="walleeOrderCancel">{$txt.cancel}</button>
     </form>
 </div>
 

@@ -30,38 +30,32 @@ class WalleeModuleCenterModule extends AbstractModuleCenterModule
 	 */
 	public function install(): void
 	{
-		try {
-			xtc_db_query("
-CREATE TABLE `wallee_transaction` (
-  `id` int(11) NOT NULL AUTO_INCREMENT, 
-  `transaction_id` binary(16) NOT NULL,
-  `confirmation_email_sent` tinyint(1) NOT NULL DEFAULT '0',
-  `data` json NOT NULL,
-  `payment_method` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `order_id` binary(16) NOT NULL,
-  `space_id` int unsigned NOT NULL,
-  `state` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` datetime(3) NOT NULL,
-  `updated_at` datetime(3) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-		");
+		$databasePath = dirname(__DIR__) . '/Database/';
+		$possibleVersions = glob($databasePath . '*.sql');
+		foreach ($possibleVersions as $migrationFile) {
+			$fileVersion = (int) str_replace([$databasePath, '.sql'], ['', ''], $migrationFile);
 
-			xtc_db_query("
-CREATE TABLE `wallee_refunds` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `refund_id` int(11) NOT NULL,
-  `order_id` int(11) NOT NULL,
-  `amount` decimal(10,0) NOT NULL,
-  `created_at` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uid_refund_id_order_id` (`refund_id`,`order_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-		");
+			if ($fileVersion < $this->getVersion()) {
+				continue;
+			}
 
-		} catch (\Exception $e) {
+			try {
+				$migrationContent = file_get_contents($migrationFile);
+				$queries = explode("\n\n", $migrationContent);
 
+				foreach ($queries as $query) {
+					if (empty($query)) {
+						continue;
+					}
+
+					xtc_db_query($query);
+				}
+			} catch (\Exception $e) {
+
+			}
 		}
+
+		$this->increaseVersion();
 
 		parent::install();
 	}
@@ -72,14 +66,23 @@ CREATE TABLE `wallee_refunds` (
 	public function uninstall()
 	{
 		parent::uninstall();
+	}
 
-		$this->paymentService->removeModuleFiles();
+	/**
+	 * @return int
+	 */
+	private function getVersion(): int
+	{
+		$configuration = $this->paymentService->getConfiguration();
+		return (int) $configuration->get('version') ?? 1;
+	}
 
-		try {
-			xtc_db_query("DROP TABLE `wallee_transaction`");
-			xtc_db_query("DROP TABLE `wallee_refunds`");
-		} catch (\Exception $e) {
-
-		}
+	/**
+	 * @void
+	 */
+	private function increaseVersion(): void
+	{
+		$configuration = $this->paymentService->getConfiguration();
+		$configuration->set('version', $this->getVersion() + 1);
 	}
 }

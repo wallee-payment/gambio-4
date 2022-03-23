@@ -71,24 +71,13 @@ class PaymentService
 		$this->languageTextManager = MainFactory::create_object(LanguageTextManager::class, array(), true);
 	}
 
-	public function removeModuleFiles()
-	{
-		$module = 'wallee_';
-		$path = $this->rootDir . 'includes/modules/payment/*.php';
-		$paymentModules = glob($path);
-		foreach ($paymentModules as $paymentModule) {
-			if (strpos($paymentModule, $module) !== false) {
-				unlink($paymentModule);
-			}
-		}
-	}
-
 	public function syncPaymentMethods()
 	{
 		$paymentMethods = $this->getPaymentMethodConfigurations();
 
 		$translations = [];
 
+		$data = [];
 		/**
 		 * PaymentMethodConfiguration $paymentMethod
 		 */
@@ -96,24 +85,47 @@ class PaymentService
 			$name = 'Wallee ' . $paymentMethod->getName();
 			$slug = trim(strtolower(WalleeHelper::slugify($name)));
 
+			$descriptions = [];
 			$languageMapping = $this->localeLanguageMapping;
 			foreach ($paymentMethod->getResolvedDescription() as $locale => $text) {
 				$language = $languageMapping[$locale];
-				$translations[$language][$slug . '_description'] = addslashes($text);
+				$descriptions[$language] = $translations[$language][$slug . '_description'] = addslashes($text);
 			}
 
+			$titles = [];
 			foreach ($paymentMethod->getResolvedTitle() as $locale => $text) {
 				$language = $languageMapping[$locale];
-				$translations[$language][$slug . '_title'] = addslashes($text);
+				$titles[$language] = $translations[$language][$slug . '_title'] = addslashes(str_replace('-/', ' / ', $text));
 			}
 
-			$this->createModuleFile($slug);
-			$this->downloadPaymentMethodLogo($paymentMethod->getResolvedImageUrl(), $slug);
+			$data[] = [
+				'logo_url' => $paymentMethod->getResolvedImageUrl(),
+				'logo_alt' => $slug,
+				'id' => $slug,
+				'module' => $translations['english'][$slug . '_title'],
+				'description' => $translations['english'][$slug . '_description'],
+				'fields' => [],
+				'titles' => $titles,
+				'descriptions' => $descriptions
+			];
+
+			// We can allow this manually for the future
+			//$this->downloadPaymentMethodLogo($paymentMethod->getResolvedImageUrl(), $slug);
 		}
+
+		$this->configuration->set('payment_methods', \json_encode($data));
 
 		$this->updateLanguageFiles($translations);
 
 		$this->clearCache();
+	}
+
+	/**
+	 * @return mixed|WalleeStorage
+	 */
+	public function getConfiguration()
+	{
+		return $this->configuration ?? MainFactory::create('WalleeStorage');
 	}
 
 	private function clearCache()
@@ -223,21 +235,6 @@ class PaymentService
 			fwrite($fp, "];\n");
 			fwrite($fp, "\n");
 			fclose($fp);
-		}
-	}
-
-	/**
-	 * @param string $slug
-	 */
-	private function createModuleFile(string $slug): void
-	{
-		$template = $this->rootDir . 'wallee_template.php';
-		$templateContent = str_replace('wallee_template', $slug, file_get_contents($template));
-
-		try {
-			file_put_contents($this->rootDir . 'includes/modules/payment/' . $slug . '.php', $templateContent);
-		} catch (\Exception $e) {
-			$GLOBALS['messageStack']->add_session($this->languageTextManager->get_text('error_installing_module_please_check_permissions', 'wallee'), 'error');
 		}
 	}
 

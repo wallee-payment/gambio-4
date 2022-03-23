@@ -13,6 +13,9 @@ use Wallee\Sdk\Model\{
 	TransactionInvoiceState
 };
 
+use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeTransactionModel;
+use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeRefundModel;
+
 class WalleeWebhookController extends HttpViewController
 {
 	/**
@@ -34,7 +37,7 @@ class WalleeWebhookController extends HttpViewController
 	{
 		$this->configuration = MainFactory::create('WalleeStorage');
 		$this->webHooksService = new WebHooksService($this->configuration);
-		$this->settings = new Settings($this->configuration);
+		$this->settings = new Settings();
 
 		parent::__construct($httpContextReader, $httpResponseProcessor, $defaultContentView);
 	}
@@ -87,14 +90,13 @@ class WalleeWebhookController extends HttpViewController
 
 				$orderId = (int)$refund->getTransaction()->getMetaData()['orderId'];
 
-				$query = xtc_db_query("SELECT * FROM `wallee_transaction` WHERE order_id = " . xtc_db_input($orderId));
+				$query = xtc_db_query("SELECT * FROM `wallee_transactions` WHERE order_id = " . xtc_db_input($orderId));
 				$transactionData = xtc_db_fetch_array($query);
 				$transactionInfo = json_decode($transactionData['data'], true);
 
-				$this->createRefundRecord((int)$data['entityId'], $orderId, $refund->getAmount());
-
-				$refunds = $this->getRefunds($orderId);
-				$amountToBeRefunded = floatval($transactionInfo['info']['total']) - $this->getTotalRefundsAmount($refunds);
+				WalleeRefundModel::createRefundRecord((int)$data['entityId'], $orderId, $refund->getAmount());
+				$refunds = WalleeRefundModel::getRefunds($orderId);
+				$amountToBeRefunded = floatval($transactionInfo['info']['total']) - WalleeRefundModel::getTotalRefundsAmount($refunds);
 
 				if ($amountToBeRefunded > 0) {
 					$this->updateOrderStatus('PARTIALLY REFUNDED', $orderId);
@@ -238,7 +240,9 @@ class WalleeWebhookController extends HttpViewController
 	private function updateOrderAndTransactionStatus(string $newStatus, int $orderId): void
 	{
 		$this->updateOrderStatus($newStatus, $orderId);
-		$this->updateTransactionStatus($newStatus, $orderId);
+
+		$transactionModel = new WalleeTransactionModel();
+		$transactionModel->updateTransactionStatus($newStatus, $orderId);
 	}
 
 	/**
@@ -256,22 +260,6 @@ class WalleeWebhookController extends HttpViewController
 			new IntType($orderStatusId),
 			new StringType(''),
 			new BoolType(false)
-		);
-	}
-
-	/**
-	 * @param string $newStatus
-	 * @param int $orderId
-	 * @throws Exception
-	 */
-	private function updateTransactionStatus(string $newStatus, int $orderId): void
-	{
-		// Update local order transaction
-		xtc_db_perform(
-			'wallee_transaction',
-			['state' => $newStatus],
-			'update',
-			'order_id = ' . xtc_db_input($orderId)
 		);
 	}
 
@@ -304,56 +292,6 @@ class WalleeWebhookController extends HttpViewController
 	private function _getParsedBody(): array
 	{
 		return json_decode(file_get_contents('php://input'), true);
-	}
-
-	/**
-	 * @param int $refundId
-	 * @param int $orderId
-	 * @param float $amount
-	 */
-	private function createRefundRecord(int $refundId, int $orderId, float $amount): void
-	{
-		$insertData = [
-			'refund_id' => $refundId,
-			'order_id' => $orderId,
-			'amount' => $amount,
-			'created_at' => date('Y-m-d H:i:s')
-		];
-
-		try {
-			xtc_db_perform('wallee_refunds', $insertData, 'insert');
-		} catch (\Exception $e) {
-
-		}
-	}
-
-	/**
-	 * @param int $orderId
-	 * @return array
-	 */
-	private function getRefunds(int $orderId): array
-	{
-		$query = xtc_db_query("SELECT * FROM `wallee_refunds` WHERE order_id='" . xtc_db_input($orderId) . "'");
-		$refunds = [];
-
-		while ($row = mysqli_fetch_assoc($query)) {
-			$refunds[] = $row;
-		}
-		return $refunds;
-	}
-
-	/**
-	 * @param array $refunds
-	 * @return float
-	 */
-	private function getTotalRefundsAmount(array $refunds): float
-	{
-		$total = 0;
-		foreach ($refunds as $refund) {
-			$total += $refund['amount'];
-		}
-
-		return round($total, 2);
 	}
 
 }

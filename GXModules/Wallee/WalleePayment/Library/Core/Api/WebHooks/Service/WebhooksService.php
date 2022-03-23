@@ -278,12 +278,11 @@ class WebHooksService
 	}
 
 	/**
-	 * @return array
+	 * @void
 	 */
 	public function synchronize(): void
 	{
 		$paymentService = new PaymentService($this->configuration);
-		$paymentService->removeModuleFiles();
 		$paymentService->syncPaymentMethods();
 	}
 

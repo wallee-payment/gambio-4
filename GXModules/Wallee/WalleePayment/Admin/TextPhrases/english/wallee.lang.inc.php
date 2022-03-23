@@ -51,4 +51,12 @@ $t_language_text_section_content_array = [
 	'amount' => 'Amount',
 	'refund_date' => 'Refund date',
 	'total' => 'Total',
+	'pay_order' => 'Pay Order',
+	'billing_address' => 'Billing Address',
+	'shipping_address' => 'Shipping Address',
+	'configuration_status_title' => 'Status',
+	'configuration_status_desc' => '&nbsp;',
+	'configuration_sort_order_title' => 'Sort order',
+	'configuration_sort_order_desc' => '&nbsp;',
+	'would_you_like_to_enable_this_payment_method' => 'Would you like to enable this payment method?',
 ];

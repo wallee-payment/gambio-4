@@ -1,0 +1,12 @@
+#loader-block {
+    margin: 0 auto;
+    text-align: center;
+}
+
+#loading, #refund-form {
+    display: none;
+}
+
+#refunds-details-table {
+    max-width: 400px;
+}

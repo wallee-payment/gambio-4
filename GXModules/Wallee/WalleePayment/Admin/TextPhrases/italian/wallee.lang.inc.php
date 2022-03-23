@@ -51,4 +51,12 @@ $t_language_text_section_content_array = [
 	'amount' => 'Importo',
 	'refund_date' => 'Data di rimborso',
 	'total' => 'Totale',
+	'pay_order' => 'Ordine di pagamento',
+	'billing_address' => 'Indirizzo Di Fatturazione',
+	'shipping_address' => 'Indirizzo di spedizione',
+	'configuration_status_title' => 'Stato',
+	'configuration_status_desc' => '&nbsp;',
+	'configuration_sort_order_title' => 'Ordinamento',
+	'configuration_sort_order_desc' => '&nbsp;',
+	'would_you_like_to_enable_this_payment_method' => 'Vuoi abilitare questo metodo di pagamento?',
 ];

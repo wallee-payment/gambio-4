@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '158e82cf20a1c39cd1822dd083a2b23100bc3208',
+    'reference' => 'b019afdd93bc620326f39c0c1c8265bce5f7596b',
     'name' => '__root__',
   ),
   'versions' => 
@@ -18,7 +18,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '158e82cf20a1c39cd1822dd083a2b23100bc3208',
+      'reference' => 'b019afdd93bc620326f39c0c1c8265bce5f7596b',
     ),
     'wallee/sdk' => 
     array (

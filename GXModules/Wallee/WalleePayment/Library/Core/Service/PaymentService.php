@@ -111,7 +111,6 @@ class PaymentService
 		}
 
 		$this->configuration->set('payment_methods', \json_encode($data));
-		$this->clearCache();
 	}
 
 	/**
@@ -120,55 +119,6 @@ class PaymentService
 	public function getConfiguration()
 	{
 		return $this->configuration ?? MainFactory::create('WalleeStorage');
-	}
-
-	private function clearCache()
-	{
-		$coo_cache_control = MainFactory::create_object('CacheControl');
-		$coo_cache_control->clear_cache();
-		$_GET['manual_categories_index'] = '1';
-
-		$themeId              = StaticGXCoreLoader::getThemeControl()->getCurrentTheme();
-		$themeSourcePath      = DIR_FS_CATALOG . StaticGXCoreLoader::getThemeControl()->getThemesPath();
-		$themeDestinationPath = DIR_FS_CATALOG . StaticGXCoreLoader::getThemeControl()->getThemePath();
-
-		$destination   = ThemeDirectoryRoot::create(new RequiredDirectory($themeDestinationPath));
-		$themeSettings = ThemeSettings::create(ThemeDirectoryRoot::create(new ExistingDirectory($themeSourcePath)),
-			$destination);
-
-		/** @var ThemeService $themeService */
-		$themeService = StaticGXCoreLoader::getService('Theme');
-		$themeService->buildTemporaryTheme(ThemeId::create($themeId), $themeSettings);
-
-		$coo_cache_control->clear_content_view_cache();
-		$coo_cache_control->clear_templates_c();
-		$coo_cache_control->clear_template_cache();
-		$coo_cache_control->clear_google_font_cache();
-		$coo_cache_control->clear_css_cache();
-		$coo_cache_control->clear_expired_shared_shopping_carts();
-		$coo_cache_control->remove_reset_token();
-
-		$coo_cache_control->clear_data_cache();
-		$coo_cache_control->clear_menu_cache();
-
-		$coo_cache_control->rebuild_feature_index();
-
-		$coo_cache_control->rebuild_products_categories_index();
-
-		$coo_cache_control->rebuild_products_properties_index();
-
-		$coo_phrase_cache_builder = MainFactory::create_object('PhraseCacheBuilder', array());
-		$coo_phrase_cache_builder->build();
-
-		/** @var CacheFactory $cacheFactory */
-		$cacheFactory = LegacyDependencyContainer::getInstance()->get(CacheFactory::class);
-		$cacheFactory->createCacheFor('text_cache')->clear();
-
-		$coo_cache_control->clear_data_cache();
-
-
-		$mailTemplatesCacheBuilder = MainFactory::create_object('MailTemplatesCacheBuilder');
-		$mailTemplatesCacheBuilder->build();
 	}
 
 	/**

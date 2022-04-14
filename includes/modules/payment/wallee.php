@@ -114,9 +114,9 @@ class wallee_ORIGIN {
 		$config     = $this->_configuration();
 		$sort_order = 0;
 		foreach ($config as $key => $data) {
-			$install_query = "insert into `gx_configurations` (`key`, `value`, `legacy_group_id`, `sort_order`, `type`, `last_modified`) "
+			$install_query = "insert into `gx_configurations` (`key`, `value`, `sort_order`, `type`, `last_modified`) "
 				. "values ('configuration/MODULE_PAYMENT_" . strtoupper($this->code) . "_" . $key . "', '"
-				. $data['value'] . "', '6', '" . $sort_order . "', '" . addslashes($data['type'] ?? '')
+				. $data['value'] . "', '" . $sort_order . "', '" . addslashes($data['type'] ?? '')
 				. "', now())";
 			xtc_db_query($install_query);
 			$sort_order++;

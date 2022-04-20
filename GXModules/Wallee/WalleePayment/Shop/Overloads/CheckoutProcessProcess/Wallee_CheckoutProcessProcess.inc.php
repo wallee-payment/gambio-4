@@ -4,14 +4,10 @@ use GXModules\WalleePayment\Library\{Core\Settings\Options\Integration,
 	Core\Settings\Struct\Settings,
 	Helper\WalleeHelper
 };
-use Wallee\Sdk\Model\{
-	AddressCreate,
-	LineItemCreate,
-	LineItemType,
-	TransactionCreate,
-};
+use Wallee\Sdk\Model\{AddressCreate, LineItemCreate, LineItemType, Transaction, TransactionCreate};
 
 use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeTransactionModel;
+use Wallee\Sdk\Model\TransactionPending;
 
 class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 {
@@ -67,7 +63,11 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		$integration = $settings->getIntegration();
 
 		$orderId = $this->createOrder();
-		$createdTransactionId = $this->createRemoteTransaction($orderId, $settings);
+		$createdTransaction = $this->createRemoteTransaction($orderId, $settings);
+
+		$createdTransactionId = $createdTransaction->getId();
+
+		$this->confirmTransaction($createdTransaction);
 
 		$transactionModel = new WalleeTransactionModel();
 		$transactionModel->create($settings, $createdTransactionId, $orderId, (array)$this->coo_order);
@@ -86,6 +86,22 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		$_SESSION['javascriptUrl'] = $this->getTransactionJavaScriptUrl($createdTransactionId);
 		$_SESSION['possiblePaymentMethod'] = $this->getTransactionPaymentMethod($settings, $createdTransactionId);
 		$_SESSION['orderTotal'] = $this->coo_order_total->output_array();
+	}
+
+    /**
+     * @param Transaction $transaction
+     * @throws \Wallee\Sdk\ApiException
+     * @throws \Wallee\Sdk\Http\ConnectionException
+     * @throws \Wallee\Sdk\VersioningException
+     */
+	private function confirmTransaction(Transaction $transaction): void {
+	    $pendingTransaction = new TransactionPending();
+	    $pendingTransaction->setId($transaction->getId());
+	    $pendingTransaction->setVersion($transaction->getVersion());
+
+	    $settings = new Settings();
+	    $settings->getApiClient()->getTransactionService()
+		->confirm($settings->getSpaceId(), $pendingTransaction);
 	}
 
 	/**
@@ -114,15 +130,15 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 			$this->_getOrderAddonValuesCollection());
 	}
 
-	/**
-	 * @param string $orderId
-	 * @param Settings $settings
-	 * @return string
-	 * @throws \Wallee\Sdk\ApiException
-	 * @throws \Wallee\Sdk\Http\ConnectionException
-	 * @throws \Wallee\Sdk\VersioningException
-	 */
-	private function createRemoteTransaction(string $orderId, Settings $settings): string
+    /**
+     * @param string $orderId
+     * @param Settings $settings
+     * @throws \Wallee\Sdk\ApiException
+     * @throws \Wallee\Sdk\Http\ConnectionException
+     * @throws \Wallee\Sdk\VersioningException
+     * @return Transaction
+     */
+	private function createRemoteTransaction(string $orderId, Settings $settings): Transaction
 	{
 
 		$order = (array)$this->coo_order;
@@ -180,7 +196,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		$transactionPayload->setFailedUrl(xtc_href_link(FILENAME_CHECKOUT_PAYMENT . '?payment_error=true', '', 'SSL'));
 		$createdTransaction = $settings->getApiClient()->getTransactionService()->create($settings->getSpaceId(), $transactionPayload);
 
-		return $createdTransaction->getId();
+		return $createdTransaction;
 	}
 
 	/**

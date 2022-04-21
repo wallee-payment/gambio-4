@@ -1,24 +1,24 @@
 <?php return array (
   'root' => 
   array (
-    'pretty_version' => 'dev-77b45a5987dc142bdbeb9edff2eaa06ee4537a86',
-    'version' => 'dev-77b45a5987dc142bdbeb9edff2eaa06ee4537a86',
+    'pretty_version' => 'dev-86019ab0d128089c4c57e040d04d17fe313a6906',
+    'version' => 'dev-86019ab0d128089c4c57e040d04d17fe313a6906',
     'aliases' => 
     array (
     ),
-    'reference' => '77b45a5987dc142bdbeb9edff2eaa06ee4537a86',
+    'reference' => '86019ab0d128089c4c57e040d04d17fe313a6906',
     'name' => '__root__',
   ),
   'versions' => 
   array (
     '__root__' => 
     array (
-      'pretty_version' => 'dev-77b45a5987dc142bdbeb9edff2eaa06ee4537a86',
-      'version' => 'dev-77b45a5987dc142bdbeb9edff2eaa06ee4537a86',
+      'pretty_version' => 'dev-86019ab0d128089c4c57e040d04d17fe313a6906',
+      'version' => 'dev-86019ab0d128089c4c57e040d04d17fe313a6906',
       'aliases' => 
       array (
       ),
-      'reference' => '77b45a5987dc142bdbeb9edff2eaa06ee4537a86',
+      'reference' => '86019ab0d128089c4c57e040d04d17fe313a6906',
     ),
     'wallee/sdk' => 
     array (

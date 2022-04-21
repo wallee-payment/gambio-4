@@ -24,24 +24,24 @@ class InstalledVersions
 private static $installed = array (
   'root' => 
   array (
-    'pretty_version' => 'dev-95d4a3f507e0dc1fb274fb014d129aae13592544',
-    'version' => 'dev-95d4a3f507e0dc1fb274fb014d129aae13592544',
+    'pretty_version' => 'dev-ea297b3d0afbd35633fa1679e6184a2f6abdc904',
+    'version' => 'dev-ea297b3d0afbd35633fa1679e6184a2f6abdc904',
     'aliases' => 
     array (
     ),
-    'reference' => '95d4a3f507e0dc1fb274fb014d129aae13592544',
+    'reference' => 'ea297b3d0afbd35633fa1679e6184a2f6abdc904',
     'name' => '__root__',
   ),
   'versions' => 
   array (
     '__root__' => 
     array (
-      'pretty_version' => 'dev-95d4a3f507e0dc1fb274fb014d129aae13592544',
-      'version' => 'dev-95d4a3f507e0dc1fb274fb014d129aae13592544',
+      'pretty_version' => 'dev-ea297b3d0afbd35633fa1679e6184a2f6abdc904',
+      'version' => 'dev-ea297b3d0afbd35633fa1679e6184a2f6abdc904',
       'aliases' => 
       array (
       ),
-      'reference' => '95d4a3f507e0dc1fb274fb014d129aae13592544',
+      'reference' => 'ea297b3d0afbd35633fa1679e6184a2f6abdc904',
     ),
     'wallee/sdk' => 
     array (

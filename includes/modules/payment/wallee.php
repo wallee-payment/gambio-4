@@ -135,11 +135,11 @@ class wallee_ORIGIN {
 				'color' => 'e0412c',
 			],
 			'CANCELORDER_STATUS_ID' => [
-				'names' => ['en' => 'Canceled', 'de' => 'Abgesagt'],
+				'names' => ['en' => 'Canceled', 'de' => 'Abgebrochen'],
 				'color' => 'ffa701',
 			],
 			'VOIDED_STATUS_ID' => [
-				'names' => ['en' => 'Voided', 'de' => 'Entwertet'],
+				'names' => ['en' => 'Voided', 'de' => 'Storniert'],
 				'color' => 'ffa701',
 			],
 			'AUTHORIZED_STATUS_ID' => [

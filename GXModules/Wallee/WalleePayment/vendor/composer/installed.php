@@ -1,24 +1,24 @@
 <?php return array (
   'root' => 
   array (
-    'pretty_version' => 'dev-a23f828e0313a9dcd3ff7d2eb439f774d786f3e1',
-    'version' => 'dev-a23f828e0313a9dcd3ff7d2eb439f774d786f3e1',
+    'pretty_version' => 'dev-e96c5f3a7ee80a7eeb9ea0da76272f632fde133c',
+    'version' => 'dev-e96c5f3a7ee80a7eeb9ea0da76272f632fde133c',
     'aliases' => 
     array (
     ),
-    'reference' => 'a23f828e0313a9dcd3ff7d2eb439f774d786f3e1',
+    'reference' => 'e96c5f3a7ee80a7eeb9ea0da76272f632fde133c',
     'name' => '__root__',
   ),
   'versions' => 
   array (
     '__root__' => 
     array (
-      'pretty_version' => 'dev-a23f828e0313a9dcd3ff7d2eb439f774d786f3e1',
-      'version' => 'dev-a23f828e0313a9dcd3ff7d2eb439f774d786f3e1',
+      'pretty_version' => 'dev-e96c5f3a7ee80a7eeb9ea0da76272f632fde133c',
+      'version' => 'dev-e96c5f3a7ee80a7eeb9ea0da76272f632fde133c',
       'aliases' => 
       array (
       ),
-      'reference' => 'a23f828e0313a9dcd3ff7d2eb439f774d786f3e1',
+      'reference' => 'e96c5f3a7ee80a7eeb9ea0da76272f632fde133c',
     ),
     'wallee/sdk' => 
     array (

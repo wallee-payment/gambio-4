@@ -204,7 +204,12 @@ class wallee_ORIGIN
 	 * Creating checkbox for each payment method.
 	 */
 	foreach ($this->getPaymentMethods() as $method) {
-	    define('MODULE_PAYMENT_WALLEE_' . strtoupper($method['id']) . '_TITLE', $method['titles'][$_SESSION['language']]);
+	    $title = $method['titles'][$_SESSION['language']];
+	    if (empty($title)) {
+		$title = $method['titles']['english'];
+	    }
+
+	    define('MODULE_PAYMENT_WALLEE_' . strtoupper($method['id']) . '_TITLE', $title);
 	    define('MODULE_PAYMENT_WALLEE_' . strtoupper($method['id']) . '_DESC', $this->languageTextManager->get_text('would_you_like_to_enable_this_payment_method', 'wallee'));
 	    $config[strtoupper($method['id'])] = ['value' => 'True', 'type' => 'switcher'];
 	}

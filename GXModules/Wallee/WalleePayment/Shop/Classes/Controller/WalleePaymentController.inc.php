@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use GXModules\WalleePayment\Library\Core\Settings\Struct\Settings;
+
 class WalleePaymentController extends HttpViewController
 {
     /**
@@ -9,9 +11,20 @@ class WalleePaymentController extends HttpViewController
     {
 	$this->contentView->set_flat_assigns(true);
 	$this->contentView->set_template_dir(DIR_FS_DOCUMENT_ROOT);
-	$this->contentView->set_content_template('GXModules/Wallee/WalleePayment/Shop/Themes/All/checkout_payment_wallee.html');
-
 	$order = (array)new order($_SESSION['tmp_oID']);
+
+	$settings = new Settings();
+	$transaction = $settings->getApiClient()
+	    ->getTransactionService()
+	    ->read($settings->getSpaceId(), $_SESSION['transactionID']);
+
+	if ($transaction->getState() === 'FAILED') {
+	    xtc_redirect(FILENAME_CHECKOUT_PAYMENT . '?payment_error=transaction_canceled');
+	}
+
+	if (empty($_SESSION['possiblePaymentMethod'])) {
+	    xtc_redirect(FILENAME_CHECKOUT_PAYMENT . '?payment_error=payment_method_not_available');
+	}
 
 	$content = $this->_render(
 	    'GXModules/Wallee/WalleePayment/Shop/Themes/All/checkout_payment_wallee.html',

@@ -102,14 +102,14 @@
                     loader.parentNode.removeChild(loader);
                     WalleeCheckout.activateLoader(false);
                     setTimeout(function () {
-                        if (this.measureIframe(iframeContainer) < 1) {
+                        if (this.measureIframe(iframeContainer) < 30) {
                             WalleeCheckout.handler.submit();
                         }
                     }, 500);
                 });
                 WalleeCheckout.handler.setHeightChangeCallback((height)=>{
                     setTimeout(function () {
-                        if(height < 1) {
+                        if(height < 30) {
                             WalleeCheckout.handler.submit();
                         }
                     }, 500);

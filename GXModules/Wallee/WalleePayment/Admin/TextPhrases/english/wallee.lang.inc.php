@@ -59,4 +59,5 @@ $t_language_text_section_content_array = [
 	'configuration_sort_order_title' => 'Sort order',
 	'configuration_sort_order_desc' => '&nbsp;',
 	'would_you_like_to_enable_this_payment_method' => 'Would you like to enable this payment method?',
+	'payment_method_not_available' => 'Payment method is not available for this transaction. Please check your address or currency',
 ];

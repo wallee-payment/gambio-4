@@ -59,4 +59,5 @@ $t_language_text_section_content_array = [
 	'configuration_sort_order_title' => 'Sortierreihenfolge',
 	'configuration_sort_order_desc' => '&nbsp;',
 	'would_you_like_to_enable_this_payment_method' => 'Möchten Sie diese Zahlungsmethode aktivieren?',
+    	'payment_method_not_available' => 'Die Zahlungsmethode ist für diese Transaktion nicht verfügbar. Bitte überprüfen Sie Ihre Adresse oder Währung',
 ];

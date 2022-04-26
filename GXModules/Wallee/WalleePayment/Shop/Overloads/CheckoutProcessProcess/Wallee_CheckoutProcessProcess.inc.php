@@ -150,7 +150,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 			$lineItem->setUniqueId($product['id']);
 			$lineItem->setSku($product['id']);
 			$lineItem->setQuantity($product['qty']);
-			$lineItem->setAmountIncludingTax($product['final_price']);
+			$lineItem->setAmountIncludingTax(floatval((string)$product['final_price']));
 			$lineItem->setType(LineItemType::PRODUCT);
 			$lineItems[] = $lineItem;
 		}
@@ -193,7 +193,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		$transactionPayload->setAutoConfirmationEnabled(getenv('WALLEE_AUTOCONFIRMATION_ENABLED') ?: false);
 
 		$transactionPayload->setSuccessUrl(xtc_href_link(FILENAME_CHECKOUT_SUCCESS, '', 'SSL'));
-		$transactionPayload->setFailedUrl(xtc_href_link(FILENAME_CHECKOUT_PAYMENT . '?payment_error=true', '', 'SSL'));
+		$transactionPayload->setFailedUrl(xtc_href_link(FILENAME_CHECKOUT_PAYMENT . '?payment_error', '', 'SSL'));
 		$createdTransaction = $settings->getApiClient()->getTransactionService()->create($settings->getSpaceId(), $transactionPayload);
 
 		return $createdTransaction;

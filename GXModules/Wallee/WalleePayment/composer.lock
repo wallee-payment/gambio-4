@@ -7,16 +7,16 @@
     "content-hash": "e0bfaed23e006aacb114bc1b8d02b6b5",
     "packages": [
         {
-            "name": "whitelabelmachinename/sdk",
+            "name": "wallee/sdk",
             "version": "3.0.1",
             "source": {
                 "type": "git",
-                "url": "git@github.com:WhiteLabelGithubOwnerName/php-sdk.git",
+                "url": "git@github.com:wallee-payment/php-sdk.git",
                 "reference": "ce1763b7ab639937e27a3f554647b584b0a76cfe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WhiteLabelGithubOwnerName/php-sdk/zipball/ce1763b7ab639937e27a3f554647b584b0a76cfe",
+                "url": "https://api.github.com/repos/wallee-payment/php-sdk/zipball/ce1763b7ab639937e27a3f554647b584b0a76cfe",
                 "reference": "ce1763b7ab639937e27a3f554647b584b0a76cfe",
                 "shasum": ""
             },
@@ -31,12 +31,12 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "WhiteLabelMachineName\\Sdk\\": "lib/"
+                    "Wallee\\Sdk\\": "lib/"
                 }
             },
             "autoload-dev": {
                 "psr-4": {
-                    "WhiteLabelMachineName\\Sdk\\": "test/"
+                    "Wallee\\Sdk\\": "test/"
                 }
             },
             "license": [
@@ -48,14 +48,14 @@
                     "homepage": "https://wallee.com"
                 }
             ],
-            "description": "WhiteLabelName SDK for PHP",
-            "homepage": "http://github.com/WhiteLabelGithubOwnerName/php-sdk",
+            "description": "wallee SDK for PHP",
+            "homepage": "http://github.com/wallee-payment/php-sdk",
             "keywords": [
                 "api",
                 "payment",
                 "php",
                 "sdk",
-                "whitelabelmachinename"
+                "wallee"
             ],
             "time": "2021-07-06T06:07:10+00:00"
         }

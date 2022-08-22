@@ -57,10 +57,6 @@
                 "sdk",
                 "whitelabelmachinename"
             ],
-            "support": {
-                "source": "https://github.com/WhiteLabelGithubOwnerName/php-sdk/tree/3.0.1",
-                "issues": "https://github.com/WhiteLabelGithubOwnerName/php-sdk/issues"
-            },
             "time": "2021-07-06T06:07:10+00:00"
         }
     ],

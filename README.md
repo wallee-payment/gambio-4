@@ -49,7 +49,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.5/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.3/docs/en/documentation.html)
 
 ## License
 

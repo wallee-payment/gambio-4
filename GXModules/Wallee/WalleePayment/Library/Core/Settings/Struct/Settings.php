@@ -11,7 +11,11 @@ use Wallee\Sdk\ApiClient;
  */
 class Settings {
 
-	/**
+	public const SHOP_SYSTEM = 'x-meta-shop-system';
+	public const SHOP_SYSTEM_VERSION = 'x-meta-shop-system-version';
+	public const SHOP_SYSTEM_AND_VERSION = 'x-meta-shop-system-and-version';
+
+    /**
 	 * @var \Wallee\Sdk\ApiClient
 	 */
 	protected $apiClient;
@@ -227,6 +231,9 @@ class Settings {
 			$this->apiClient   = new ApiClient($this->getUserId(), $this->getApplicationKey());
 			$apiClientBasePath = getenv('WALLEE_API_BASE_PATH') ? getenv('WALLEE_API_BASE_PATH') : $this->apiClient->getBasePath();
 			$this->apiClient->setBasePath($apiClientBasePath);
+			foreach (self::getDefaultHeaderData() as $key => $value) {
+				$this->apiClient->addDefaultHeader($key, $value);
+			}
 		}
 		return $this->apiClient;
 	}
@@ -261,5 +268,21 @@ class Settings {
 	protected function setApplicationKey(string $applicationKey): void
 	{
 		$this->applicationKey = $applicationKey;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected static function getDefaultHeaderData()
+	{
+		$gx_version = include DIR_FS_CATALOG . 'release_info.php';
+	
+		$shop_version = str_replace('v', '', $gx_version);
+		[$major_version, $minor_version, $_] = explode('.', $shop_version, 3);
+		return [
+			self::SHOP_SYSTEM             => 'gambio',
+			self::SHOP_SYSTEM_VERSION     => $shop_version,
+			self::SHOP_SYSTEM_AND_VERSION => 'gambio-' . $major_version . '.' . $minor_version,
+		];
 	}
 }

@@ -8,7 +8,9 @@ The Wallee Payment plugin wraps around the Wallee API. This library facilitates 
 ## Requirements
 
 - Minimum PHP 7.2 and lower than PHP 8
-- Gambio 4.5 and above
+- Gambio 4.5
+
+We only support the Gambio standard checkout (without modifications)
 
 ## Installation
 
@@ -49,7 +51,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.7/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.8/docs/en/documentation.html)
 
 ## License
 

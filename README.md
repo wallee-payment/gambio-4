@@ -25,25 +25,31 @@ We only support the Gambio standard checkout (without modifications)
 
 3. Include it to your Gambio shop root folder
 
-4. Login to Admin Panel
+4. Run the install command
+```bash
+# Please go to /GXModules/Wallee/WalleePayment and run the command
+composer install
+```
 
-5. Click on Toolbox > Clear Cache and clear all caches
+5. Login to Admin Panel
 
-6. Click on Modules > Module Center > Wallee Payment
+6. Click on Toolbox > Clear Cache and clear all caches
 
-7. Install the module and clear the cache again (repeat step 5)
+7. Click on Modules > Module Center > Wallee Payment
 
-8. Select Modules > Module Center > Wallee Payment again and click Edit
+8. Install the module and clear the cache again (repeat step 5)
 
-9. Enter correct data from Wallee API and click Save. Payment methods will be synchronised
+9. Select Modules > Module Center > Wallee Payment again and click Edit
 
-10. Navigate To Modules -> Payment Systems
+10. Enter correct data from Wallee API and click Save. Payment methods will be synchronised
 
-11. Click on "Miscellaneous" tab and find "added modules" and click the Wallee Payment.
+11. Navigate To Modules -> Payment Systems
 
-12. Install the Wallee Payment System
+12. Click on "Miscellaneous" tab and find "added modules" and click the Wallee Payment.
 
-13. Click Edit, select payment methods that you want to use and save configuration (Payment methods are synchronized from Wallee and only if they are enabled)
+13. Install the Wallee Payment System
+
+14. Click Edit, select payment methods that you want to use and save configuration (Payment methods are synchronized from Wallee and only if they are enabled)
 
 ## Usage
 The library needs to be configured with your account's space id, user id, and application key which are available in your Wallee
@@ -51,7 +57,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.8/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.9/docs/en/documentation.html)
 
 ## License
 

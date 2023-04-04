@@ -6,8 +6,8 @@ class Wallee_CheckoutPaymentContentControl extends Wallee_CheckoutPaymentContent
 {
     public function proceed()
     {
-	$_SESSION['gm_error_message'] = $this->getErrorMessage();
-	return parent::proceed();
+		$_SESSION['gm_error_message'] = $this->getErrorMessage();
+		return parent::proceed();
     }
 
     /**
@@ -18,19 +18,19 @@ class Wallee_CheckoutPaymentContentControl extends Wallee_CheckoutPaymentContent
      */
     private function getErrorMessage()
     {
-	$transactionId = $_SESSION['transactionID'] ?? null;
+        $transactionId = $_SESSION['transactionID'] ?? null;
 
-	if (!isset($_GET['payment_error']) && empty($transactionId)) {
-	    return '';
-	}
+	    if (!isset($_GET['payment_error']) || empty($transactionId)) {
+	        return '';
+	    }
 
-	$settings = new Settings();
-	$transaction = $settings->getApiClient()->getTransactionService()->read($settings->getSpaceId(), $_SESSION['transactionID']);
-	$languageTextManager = MainFactory::create_object(LanguageTextManager::class, array(), true);
-	if (!empty($_GET['payment_error'])) {
-	    return $languageTextManager->get_text($_GET['payment_error'], 'wallee');
-	}
+	    $settings = new Settings();
+	    $transaction = $settings->getApiClient()->getTransactionService()->read($settings->getSpaceId(), $_SESSION['transactionID']);
+	    $languageTextManager = MainFactory::create_object(LanguageTextManager::class, array(), true);
+	    if (!empty($_GET['payment_error'])) {
+	        return $languageTextManager->get_text($_GET['payment_error'], 'wallee');
+	    }
 
-	return $transaction->getUserFailureMessage();
+	    return $transaction->getUserFailureMessage();
     }
 }

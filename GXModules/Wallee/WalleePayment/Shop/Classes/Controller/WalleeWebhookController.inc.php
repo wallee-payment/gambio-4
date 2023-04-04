@@ -252,9 +252,6 @@ class WalleeWebhookController extends HttpViewController
 	 */
 	private function updateOrderStatus(string $newStatus, int $orderId): void
 	{
-		if ($newStatus == TransactionInvoiceState::PAID || $newStatus == TransactionState::FULFILL) {
-			$newStatus = TransactionState::PROCESSING;
-		}
 		/** @var OrderWriteServiceInterface $orderWriteService */
 		$orderWriteService = StaticGXCoreLoader::getService('OrderWrite');
 		$orderStatusId = $this->getOrderStatusId($newStatus);

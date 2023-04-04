@@ -18,6 +18,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 	 */
 	public function proceed()
 	{
+		$_SESSION['gambio_hub_selection'] = $_SESSION['payment'];
 		if ($this->check_redirect()) {
 			return true;
 		}

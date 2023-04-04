@@ -40,8 +40,7 @@ class Wallee_OrderExtender extends Wallee_OrderExtender_parent
 		$contentView->set_content_data('authorizedState', TransactionState::AUTHORIZED);
 		$contentView->set_content_data('fulfillState', TransactionState::FULFILL);
 
-		$showRefundsForm = $transactionState !== WalleeTransactionModel::TRANSACTION_STATE_PAID
-			&& $transactionState !== WalleeTransactionModel::TRANSACTION_STATE_REFUNDED && $amountToBeRefunded > 0;
+		$showRefundsForm = $transactionState !== WalleeTransactionModel::TRANSACTION_STATE_REFUNDED && $amountToBeRefunded > 0;
 		$contentView->set_content_data('showRefundsForm', $showRefundsForm);
 
 		$showButtonsAfterFullfill = $transactionState !== TransactionState::FULFILL

@@ -151,7 +151,7 @@
 		public function actionRefund()
 		{
 			$orderId = (int)$this->_getPostData('orderId');
-			$amount = floatval($this->_getPostData('amount'));
+			$amount = floatval(str_replace(',', '', $this->_getPostData('amount')));
 			
 			if ($amount <= 0) {
 				return new HttpControllerResponse('Amount should be greater than 0');
@@ -162,8 +162,12 @@
 			$transactionAmount = floatval($transactionInfo['info']['total']);
 			
 			$transactionStateFulfill = TransactionState::FULFILL;
+			$transactionStatePaid = WalleeTransactionModel::TRANSACTION_STATE_PAID;
 			if (
-				strtolower($transaction->getState()) === strtolower($transactionStateFulfill) &&
+				  (
+					strtolower($transaction->getState()) === strtolower($transactionStateFulfill) ||
+					strtolower($transaction->getState()) === strtolower($transactionStatePaid)
+				  ) &&
 				$amount <= $transactionAmount
 			) {
 				try {

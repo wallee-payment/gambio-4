@@ -161,14 +161,15 @@
 			$transactionInfo = json_decode($transaction->getData(), true);
 			$transactionAmount = floatval($transactionInfo['info']['total']);
 			
+			if ($amount > $transactionAmount) {
+				return new HttpControllerResponse('Please make sure you are trying to refund correct amount of money');
+			}
+			
 			$transactionStateFulfill = TransactionState::FULFILL;
 			$transactionStatePaid = WalleeTransactionModel::TRANSACTION_STATE_PAID;
 			if (
-				  (
-					strtolower($transaction->getState()) === strtolower($transactionStateFulfill) ||
-					strtolower($transaction->getState()) === strtolower($transactionStatePaid)
-				  ) &&
-				$amount <= $transactionAmount
+				strtolower($transaction->getState()) === strtolower($transactionStateFulfill) ||
+				strtolower($transaction->getState()) === strtolower($transactionStatePaid)
 			) {
 				try {
 					$transactionID = $transaction->getTransactionId();
@@ -187,7 +188,20 @@
 					
 					return new HttpControllerResponse('');
 				} catch (\Exception $e) {
-					return new HttpControllerResponse('Refunds are not available for this payment method');
+					$detectJsonPattern = '/
+					\{              # { character
+						(?:         # non-capturing group
+							[^{}]   # anything that is not a { or }
+							|       # OR
+							(?R)    # recurses the entire pattern
+						)*          # previous group zero or more times
+					\}              # } character
+					/x';
+					preg_match_all($detectJsonPattern, $e->getMessage(), $matches);
+					$jsonErrorMessage = $matches[0][0];
+					$errorData = \json_decode($jsonErrorMessage);
+					
+					return new HttpControllerResponse($errorData->message);
 				}
 			}
 			

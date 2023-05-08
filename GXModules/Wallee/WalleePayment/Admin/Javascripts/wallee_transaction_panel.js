@@ -31,7 +31,7 @@ $(function() {
                 setTimeout(function() {
                     loader.hide();
                     location.reload();
-                }, 3000);
+                }, 7000);
             }
 
             return false;
@@ -78,7 +78,7 @@ $(function() {
                 setTimeout(function() {
                     loader.hide();
                     location.reload();
-                }, 3000);
+                }, 7000);
             }
 
             return false;

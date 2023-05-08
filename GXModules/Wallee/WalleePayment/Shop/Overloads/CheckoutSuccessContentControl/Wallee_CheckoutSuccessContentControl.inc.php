@@ -4,7 +4,10 @@ class Wallee_CheckoutSuccessContentControl extends Wallee_CheckoutSuccessContent
 {
 	public function proceed()
 	{
-		$this->reset();
+		if (strpos($_SESSION['payment'] ?? '', 'wallee') !== false) {
+			$this->reset();
+		}
+
 		parent::proceed();
 		return true;
 	}

@@ -119,7 +119,7 @@ class PaymentService
 
 	    if (empty($result)) {
 		$install_query = "insert into `gx_configurations` (`key`, `value`, `sort_order`, `type`, `last_modified`) "
-		    . "values ('configuration/" . $key . "', 'true', '0', 'switcher', now())";
+		    . "values ('configuration/" . $key . "', 'false', '0', 'switcher', now())";
 		xtc_db_query($install_query);
 
 		define($key . '_TITLE', $name . ' ' . $titles['english']);

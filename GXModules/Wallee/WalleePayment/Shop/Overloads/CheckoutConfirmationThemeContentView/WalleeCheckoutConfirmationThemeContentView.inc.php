@@ -6,9 +6,11 @@ class WalleeCheckoutConfirmationThemeContentView extends WalleeCheckoutConfirmat
 {
 	public function prepare_data()
 	{
-		if (strpos($_SESSION['payment'], 'wallee') !== false) {
-			$this->coo_order->info['payment_method'] = '';
+		if (strpos($_SESSION['payment'], 'wallee') === false) {
+			return parent::prepare_data();
 		}
+
+		$this->coo_order->info['payment_method'] = '';
 		parent::prepare_data();
 		
 		$configurationStorage = MainFactory::create('WalleeStorage');

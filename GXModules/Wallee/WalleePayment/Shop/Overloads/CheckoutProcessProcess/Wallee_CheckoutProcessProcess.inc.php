@@ -20,6 +20,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 	{
 		if (strpos($_SESSION['payment'] ?? '', 'wallee') === false) {
 			parent::proceed();
+			return true;
 		}
 		
 		$_SESSION['gambio_hub_selection'] = $_SESSION['payment'];

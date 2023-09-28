@@ -56,7 +56,7 @@ class WalleeWebhookController extends HttpViewController
 				$orderId = (int)$transaction->getMetaData()['orderId'];
 
 				if (empty($orderId)) {
-					throw new Exception('Transaction not updated. Empty order ID');
+					return new JsonHttpControllerResponse(['Transaction was not updated updated, because not orderId is not provided in this state']);
 				}
 
 				$this->updateTransaction($transaction, $orderId);

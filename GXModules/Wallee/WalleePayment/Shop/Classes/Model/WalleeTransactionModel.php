@@ -58,12 +58,12 @@ class WalleeTransactionModel
 			'order_id = ' . xtc_db_input($orderId)
 		);
 	}
-
+	
 	/**
 	 * @param int $orderId
-	 * @return array
+	 * @return array|null
 	 */
-	private function getFromDbByOrderId(int $orderId): array {
+	private function getFromDbByOrderId(int $orderId): ?array {
 		$query = xtc_db_query("SELECT * FROM `wallee_transactions` WHERE order_id = " . xtc_db_input($orderId));
 		return xtc_db_fetch_array($query);
 	}

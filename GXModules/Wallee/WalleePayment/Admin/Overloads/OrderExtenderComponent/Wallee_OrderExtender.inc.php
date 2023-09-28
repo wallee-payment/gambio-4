@@ -21,6 +21,9 @@ class Wallee_OrderExtender extends Wallee_OrderExtender_parent
 		$orderId = (int)$_GET['oID'];
 
 		$transaction = $transactionModel->getByOrderId($orderId);
+		if (empty($transaction)) {
+			return parent::proceed();
+		}
 
 		$transactionData = $transaction->getData();
 		$transactionInfo = $transactionData ? \json_decode($transactionData, true) : [];

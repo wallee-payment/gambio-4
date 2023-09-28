@@ -73,18 +73,17 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		$settings = new Settings();
 		$integration = $settings->getIntegration();
 		
+		
 		$orderId = $this->createOrder();
-		$createdTransaction = $this->createRemoteTransaction($orderId, $settings, $integration);
+		$createdTransactionId = $_SESSION['createdTransactionId'];
 		
-		$createdTransactionId = $createdTransaction->getId();
-		
-		$this->confirmTransaction($createdTransaction);
+		$transaction = $this->getTransactionFromPortal($createdTransactionId);
+		$this->confirmTransaction($transaction, $orderId, $settings);
 		
 		$transactionModel = new WalleeTransactionModel();
 		$transactionModel->create($settings, $createdTransactionId, $orderId, (array)$this->coo_order);
 		
 		$_SESSION['integration'] = $integration;
-		$_SESSION['transactionID'] = $createdTransactionId;
 		$this->_setOrderId($orderId);
 		
 		if ($integration == Integration::PAYMENT_PAGE) {
@@ -100,20 +99,124 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 	}
 	
 	/**
-	 * @param Transaction $transaction
+	 * @param string $transactionId
+	 * @return Transaction|null
 	 * @throws \Wallee\Sdk\ApiException
 	 * @throws \Wallee\Sdk\Http\ConnectionException
 	 * @throws \Wallee\Sdk\VersioningException
 	 */
-	private function confirmTransaction(Transaction $transaction): void
+	public function getTransactionFromPortal(string $transactionId): ?Transaction
 	{
+		$settings = new Settings();
+		return $settings->getApiClient()
+		  ->getTransactionService()
+		  ->read($settings->getSpaceId(), $transactionId);
+	}
+	
+	/**
+	 * @param Transaction $transaction
+	 * @param string $orderId
+	 * @param Settings $settings
+	 * @return Transaction
+	 * @throws \Wallee\Sdk\ApiException
+	 * @throws \Wallee\Sdk\Http\ConnectionException
+	 * @throws \Wallee\Sdk\VersioningException
+	 */
+	private function confirmTransaction(Transaction $transaction, string $orderId, Settings $settings): Transaction
+	{
+		$order = (array)$this->coo_order;
+		$lineItems = [];
+		foreach ($order['products'] as $product) {
+			$lineItem = new LineItemCreate();
+			$lineItem->setName($product['name']);
+			$lineItem->setUniqueId($product['id']);
+			$lineItem->setSku($product['id']);
+			$lineItem->setQuantity($product['qty']);
+			$lineItem->setAmountIncludingTax(floatval((string)$product['final_price']));
+			$lineItem->setType(LineItemType::PRODUCT);
+			$lineItems[] = $lineItem;
+		}
+		
+		$shippingCost = floatval((string)$order['info']['shipping_cost']);
+		if ($shippingCost > 0) {
+			$lineItem = new LineItemCreate();
+			$lineItem->setName('Shipping: ' . $order['info']['shipping_method']);
+			$lineItem->setUniqueId('shipping-' . $order['info']['shipping_class']);
+			$lineItem->setSku('shipping-' . $order['info']['shipping_class']);
+			$lineItem->setQuantity(1);
+			$lineItem->setAmountIncludingTax($shippingCost);
+			$lineItem->setType(LineItemType::SHIPPING);
+			$lineItems[] = $lineItem;
+		}
+		
 		$pendingTransaction = new TransactionPending();
 		$pendingTransaction->setId($transaction->getId());
 		$pendingTransaction->setVersion($transaction->getVersion());
+		$pendingTransaction->setLineItems($lineItems);
+		
+		$billingAddress = $this->getBillingAddress($order);
+		$shippingAddress = $this->getShippingAddress($order);
+		
+		$pendingTransaction->setCurrency($order['info']['currency']);
+		$pendingTransaction->setLineItems($lineItems);
+		$pendingTransaction->setBillingAddress($billingAddress);
+		$pendingTransaction->setShippingAddress($shippingAddress);
+		
+		$pendingTransaction->setMetaData([
+		  'spaceId' => $settings->getSpaceId(),
+		  'orderId' => $orderId
+		]);
+		
+		$pendingTransaction->setMerchantReference($orderId);
+		
+		if ($settings->getIntegration() === Integration::PAYMENT_PAGE) {
+			$paymentMethodConfigurationId = $this->getPaymentMethodConfigurationId();
+			if ($paymentMethodConfigurationId) {
+				$pendingTransaction->setAllowedPaymentMethodConfigurations([$paymentMethodConfigurationId]);
+			}
+		}
+		
+		$pendingTransaction->setSuccessUrl(xtc_href_link(FILENAME_CHECKOUT_SUCCESS, '', 'SSL'));
+		$pendingTransaction->setFailedUrl(xtc_href_link(FILENAME_CHECKOUT_PAYMENT . '?payment_error', '', 'SSL'));
 		
 		$settings = new Settings();
-		$settings->getApiClient()->getTransactionService()
+		$transaction = $settings->getApiClient()->getTransactionService()
 		  ->confirm($settings->getSpaceId(), $pendingTransaction);
+		
+		return $transaction;
+	}
+	
+	protected function _getOrderPaymentType()
+	{
+		$walleePaymentType = $_SESSION['payment_methods_title'] ?? null;
+		if (empty($walleePaymentType) || strpos($_SESSION['payment'], 'wallee') === false) {
+			return parent::_getOrderPaymentType();
+		}
+
+		return MainFactory::create('OrderPaymentType', new StringType($_SESSION['payment_methods_title']),
+		  new StringType($_SESSION['payment_methods_title']));
+	}
+	
+	/**
+	 * @return int|null
+	 * @throws \Wallee\Sdk\ApiException
+	 * @throws \Wallee\Sdk\Http\ConnectionException
+	 * @throws \Wallee\Sdk\VersioningException
+	 */
+	private function getPaymentMethodConfigurationId()
+	{
+		$paymentMethodConfigurationId = null;
+		$paymentService = new PaymentService(MainFactory::create('WalleeStorage'));
+		$paymentMethodConfigurations = $paymentService->getPaymentMethodConfigurations();
+		foreach ($paymentMethodConfigurations as $paymentMethodConfiguration) {
+			$slug = 'wallee_' . trim(strtolower(WalleeHelper::slugify($paymentMethodConfiguration->getName())));
+			if ($_SESSION['choosen_payment_method'] === $slug) {
+				$paymentMethodConfigurationId = $paymentMethodConfiguration->getId();
+				break;
+			}
+		}
+		
+		return $paymentMethodConfigurationId;
 	}
 	
 	/**
@@ -143,89 +246,6 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 	}
 	
 	/**
-	 * @param string $orderId
-	 * @param Settings $settings
-	 * @param string $integration
-	 * @return Transaction
-	 * @throws \Wallee\Sdk\ApiException
-	 * @throws \Wallee\Sdk\Http\ConnectionException
-	 * @throws \Wallee\Sdk\VersioningException
-	 */
-	private function createRemoteTransaction(string $orderId, Settings $settings, string $integration): Transaction
-	{
-		
-		$order = (array)$this->coo_order;
-		$lineItems = [];
-		foreach ($order['products'] as $product) {
-			$lineItem = new LineItemCreate();
-			$lineItem->setName($product['name']);
-			$lineItem->setUniqueId($product['id']);
-			$lineItem->setSku($product['id']);
-			$lineItem->setQuantity($product['qty']);
-			$lineItem->setAmountIncludingTax(floatval((string)$product['final_price']));
-			$lineItem->setType(LineItemType::PRODUCT);
-			$lineItems[] = $lineItem;
-		}
-		
-		$shippingCost = floatval((string)$order['info']['shipping_cost']);
-		if ($shippingCost > 0) {
-			$lineItem = new LineItemCreate();
-			$lineItem->setName('Shipping: ' . $order['info']['shipping_method']);
-			$lineItem->setUniqueId('shipping-' . $order['info']['shipping_class']);
-			$lineItem->setSku('shipping-' . $order['info']['shipping_class']);
-			$lineItem->setQuantity(1);
-			$lineItem->setAmountIncludingTax($shippingCost);
-			$lineItem->setType(LineItemType::SHIPPING);
-			$lineItems[] = $lineItem;
-		}
-		
-		$billingAddress = $this->getBillingAddress($order);
-		$shippingAddress = $this->getShippingAddress($order);
-		
-		$transactionPayload = new TransactionCreate();
-		$transactionPayload->setCurrency($order['info']['currency']);
-		$transactionPayload->setLineItems($lineItems);
-		$transactionPayload->setBillingAddress($billingAddress);
-		$transactionPayload->setShippingAddress($shippingAddress);
-		$transactionPayload->setMerchantReference($orderId);
-		$transactionPayload->setMetaData([
-		  'orderId' => $orderId,
-		  'spaceId' => $settings->getSpaceId(),
-		]);
-		$transactionPayload->setSpaceViewId($settings->getSpaceViewId());
-		$transactionPayload->setAutoConfirmationEnabled(getenv('WALLEE_AUTOCONFIRMATION_ENABLED') ?: false);
-		
-		if ($integration === Integration::PAYMENT_PAGE) {
-			$paymentMethodConfigurationId = $this->getPaymentMethodConfigurationId();
-			if ($paymentMethodConfigurationId) {
-				$transactionPayload->setAllowedPaymentMethodConfigurations([$paymentMethodConfigurationId]);
-			}
-		}
-		
-		$transactionPayload->setSuccessUrl(xtc_href_link(FILENAME_CHECKOUT_SUCCESS, '', 'SSL'));
-		$transactionPayload->setFailedUrl(xtc_href_link(FILENAME_CHECKOUT_PAYMENT . '?payment_error', '', 'SSL'));
-		$createdTransaction = $settings->getApiClient()->getTransactionService()->create($settings->getSpaceId(), $transactionPayload);
-		
-		return $createdTransaction;
-	}
-	
-	private function getPaymentMethodConfigurationId()
-	{
-		$paymentMethodConfigurationId = null;
-		$paymentService = new PaymentService(MainFactory::create('WalleeStorage'));
-		$paymentMethodConfigurations = $paymentService->getPaymentMethodConfigurations();
-		foreach ($paymentMethodConfigurations as $paymentMethodConfiguration) {
-			$slug = 'wallee_' . trim(strtolower(WalleeHelper::slugify($paymentMethodConfiguration->getName())));
-			if ($_SESSION['choosen_payment_method'] === $slug) {
-				$paymentMethodConfigurationId = $paymentMethodConfiguration->getId();
-				break;
-			}
-		}
-		
-		return $paymentMethodConfigurationId;
-	}
-	
-	/**
 	 * @param Settings $settings
 	 * @param string $transactionId
 	 * @return array
@@ -249,6 +269,21 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 			$slug = 'wallee_' . trim(strtolower(WalleeHelper::slugify($possiblePaymentMethod->getName())));
 			return $slug === $chosenPaymentMethod;
 		}) ?? [];
+	}
+	
+	/**
+	 * @param int $transactionId
+	 * @return string
+	 * @throws \Wallee\Sdk\ApiException
+	 * @throws \Wallee\Sdk\Http\ConnectionException
+	 * @throws \Wallee\Sdk\VersioningException
+	 */
+	private function getTransactionJavaScriptUrl(int $transactionId): string
+	{
+		$settings = new Settings();
+		
+		return $settings->getApiClient()->getTransactionIframeService()
+		  ->javascriptUrl($settings->getSpaceId(), $transactionId);
 	}
 	
 	private function getBillingAddress($order): AddressCreate
@@ -285,20 +320,5 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		$shippingAddress->setSalutation($order['customer']['gender'] === 'm' ? 'Mr' : 'Ms');
 		
 		return $shippingAddress;
-	}
-	
-	/**
-	 * @param int $transactionId
-	 * @return string
-	 * @throws \Wallee\Sdk\ApiException
-	 * @throws \Wallee\Sdk\Http\ConnectionException
-	 * @throws \Wallee\Sdk\VersioningException
-	 */
-	private function getTransactionJavaScriptUrl(int $transactionId): string
-	{
-		$settings = new Settings();
-		
-		return $settings->getApiClient()->getTransactionIframeService()
-		  ->javascriptUrl($settings->getSpaceId(), $transactionId);
 	}
 }

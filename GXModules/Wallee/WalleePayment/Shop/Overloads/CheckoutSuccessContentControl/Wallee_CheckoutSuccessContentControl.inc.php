@@ -5,6 +5,16 @@ class Wallee_CheckoutSuccessContentControl extends Wallee_CheckoutSuccessContent
 	public function proceed()
 	{
 		if (strpos($_SESSION['payment'] ?? '', 'wallee') !== false) {
+			$coo_checkout_process = MainFactory::create_object('CheckoutProcessProcess');
+			$coo_checkout_process->set_data('GET', $_GET);
+			$coo_checkout_process->set_data('POST', $_POST);
+			$coo_checkout_process->set_data('GLOBALS', $GLOBALS);
+			
+			$coo_checkout_process->set_('coo_order_total', new order_total());
+			$coo_checkout_process->set_('coo_properties', MainFactory::create_object('PropertiesControl'));
+			$coo_checkout_process->set_('coo_order', $_SESSION['global_order']);
+			$coo_checkout_process->process_products();
+			
 			$this->reset();
 		}
 
@@ -52,5 +62,5 @@ class Wallee_CheckoutSuccessContentControl extends Wallee_CheckoutSuccessContent
 	    $coo_send_order_process->proceed();
 	    $_SESSION['email_sent_' . $_SESSION['order_id']] = true;
 	}
-    
+ 
 }

@@ -1,13 +1,10 @@
 <?php
 
+use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeTransactionModel;
 use GXModules\WalleePayment\Library\{Core\Settings\Options\Integration,
   Core\Settings\Struct\Settings,
-  Helper\WalleeHelper,
-  Core\Service\PaymentService
-};
-use Wallee\Sdk\Model\{AddressCreate, LineItemCreate, LineItemType, Transaction, TransactionCreate};
-
-use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeTransactionModel;
+  Helper\WalleeHelper};
+use Wallee\Sdk\Model\{AddressCreate, LineItemCreate, LineItemType, Transaction};
 use Wallee\Sdk\Model\TransactionPending;
 
 class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
@@ -37,7 +34,8 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 			
 			$this->save_module_data();
 			$this->coo_order_total->apply_credit();
-			$this->process_products();
+			
+			$_SESSION['global_order'] = $GLOBALS['order'];
 			$this->save_tracking_data();
 			
 			// redirect to payment service
@@ -47,14 +45,19 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		}
 		
 		if ($this->tmp_order === false) {
-		    	$settings = new Settings();
-
-		    	if ($settings->isConfirmationEmailSendEnabled()) {
-			    $_SESSION['order_id'] = $this->order_id;
+			$settings = new Settings();
+			
+			if ($settings->isConfirmationEmailSendEnabled()) {
+				$_SESSION['order_id'] = $this->order_id;
 			}
 			
 			$this->coo_payment->after_process();
-			
+			if ($_SESSION['redirect_url']) {
+				$redirectUrl = $_SESSION['redirect_url'];
+				unset($_SESSION['redirect_url']);
+				xtc_redirect($redirectUrl);
+				return true;
+			}
 			$this->set_redirect_url(xtc_href_link("shop.php", 'do=WalleePayment/PaymentPage', 'SSL'));
 			return true;
 		}
@@ -73,8 +76,6 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		
 		$settings = new Settings();
 		$integration = $settings->getIntegration();
-		
-		
 		$orderId = $this->createOrder();
 		$createdTransactionId = $_SESSION['createdTransactionId'];
 		
@@ -90,13 +91,12 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		if ($integration == Integration::PAYMENT_PAGE) {
 			$redirectUrl = $settings->getApiClient()->getTransactionPaymentPageService()
 			  ->paymentPageUrl($settings->getSpaceId(), $createdTransactionId);
-			
-			xtc_redirect($redirectUrl);
-			return;
+			$_SESSION['redirect_url'] = $redirectUrl;
+		} else {
+			$_SESSION['javascriptUrl'] = $this->getTransactionJavaScriptUrl($createdTransactionId);
+			$_SESSION['possiblePaymentMethod'] = $this->getTransactionPaymentMethod($settings, $createdTransactionId);
+			$_SESSION['orderTotal'] = $this->coo_order_total->output_array();
 		}
-		$_SESSION['javascriptUrl'] = $this->getTransactionJavaScriptUrl($createdTransactionId);
-		$_SESSION['possiblePaymentMethod'] = $this->getTransactionPaymentMethod($settings, $createdTransactionId);
-		$_SESSION['orderTotal'] = $this->coo_order_total->output_array();
 	}
 	
 	/**
@@ -171,7 +171,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		$pendingTransaction->setMerchantReference($orderId);
 		
 		if ($settings->getIntegration() === Integration::PAYMENT_PAGE) {
-			$paymentMethodConfigurationId = $this->getPaymentMethodConfigurationId();
+			$paymentMethodConfigurationId = WalleeHelper::getPaymentMethodConfigurationId();
 			if ($paymentMethodConfigurationId) {
 				$pendingTransaction->setAllowedPaymentMethodConfigurations([$paymentMethodConfigurationId]);
 			}
@@ -193,31 +193,9 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
 		if (empty($walleePaymentType) || strpos($_SESSION['payment'], 'wallee') === false) {
 			return parent::_getOrderPaymentType();
 		}
-
+		
 		return MainFactory::create('OrderPaymentType', new StringType($_SESSION['payment_methods_title']),
 		  new StringType($_SESSION['payment_methods_title']));
-	}
-	
-	/**
-	 * @return int|null
-	 * @throws \Wallee\Sdk\ApiException
-	 * @throws \Wallee\Sdk\Http\ConnectionException
-	 * @throws \Wallee\Sdk\VersioningException
-	 */
-	private function getPaymentMethodConfigurationId()
-	{
-		$paymentMethodConfigurationId = null;
-		$paymentService = new PaymentService(MainFactory::create('WalleeStorage'));
-		$paymentMethodConfigurations = $paymentService->getPaymentMethodConfigurations();
-		foreach ($paymentMethodConfigurations as $paymentMethodConfiguration) {
-			$slug = 'wallee_' . trim(strtolower(WalleeHelper::slugify($paymentMethodConfiguration->getName())));
-			if ($_SESSION['choosen_payment_method'] === $slug) {
-				$paymentMethodConfigurationId = $paymentMethodConfiguration->getId();
-				break;
-			}
-		}
-		
-		return $paymentMethodConfigurationId;
 	}
 	
 	/**

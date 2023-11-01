@@ -164,9 +164,13 @@ class WalleeWebhookController extends HttpViewController
 		$additionalOrderData = xtc_db_query("SELECT `language` FROM orders WHERE orders_id='" . xtc_db_input($orderId) . "'");
 		$orderLanguage = xtc_db_fetch_array($additionalOrderData);
 
-		$additionalLanguageData = xtc_db_query("SELECT `languages_id`, `code`  FROM languages WHERE LOWER(name)='" . strtolower(addslashes($orderLanguage['language'])) . "'");
+		$additionalLanguageData = xtc_db_query("SELECT `languages_id`, `code`  FROM languages WHERE LOWER(directory)='" . strtolower(addslashes($orderLanguage['language'])) . "'");
+		if (empty($additionalLanguageData)) {
+			// Fallback for older versions
+			$additionalLanguageData = xtc_db_query("SELECT `languages_id`, `code`  FROM languages WHERE LOWER(name)='" . strtolower(addslashes($orderLanguage['language'])) . "'");
+		}
 		$languageData = xtc_db_fetch_array($additionalLanguageData);
-
+		
 		$coo_send_order_content_view = MainFactory::create_object('SendOrderContentView');
 		$coo_send_order_content_view->set_('order', $order);
 		$coo_send_order_content_view->set_('order_id', $orderId);
@@ -182,8 +186,9 @@ class WalleeWebhookController extends HttpViewController
 		$t_txt_mail = $t_mail_content_array['txt'];
 
 		// CREATE SUBJECT
-		if (extension_loaded('intl')) {
-			$order_date = utf8_encode_wrapper(DateFormatter::formatAsFullDate(new DateTime(), new LanguageCode(new StringType($languageData['code']))));
+		$languageCode = $languageData['code'] ?? null;
+		if (extension_loaded('intl') && $languageCode) {
+			$order_date = utf8_encode_wrapper(DateFormatter::formatAsFullDate(new DateTime(), new LanguageCode(new StringType($languageCode))));
 		} else {
 			$order_date = utf8_encode_wrapper(strftime(DATE_FORMAT_LONG));
 		}
@@ -274,13 +279,18 @@ class WalleeWebhookController extends HttpViewController
 		$orderStatusService = StaticGXCoreLoader::getService('OrderStatus');
 		/** @var \OrderStatusInterface $orderStatus */
 		foreach ($orderStatusService->findAll() as $orderStatus) {
-			$orderStatusName = $orderStatus->getName(MainFactory::create('LanguageCode', new StringType('en')));
+			try {
+				$orderStatusName = $orderStatus->getName(MainFactory::create('LanguageCode', new StringType('en')));
+			} catch (\InvalidArgumentException $e) {
+				$orderStatusName = $orderStatus->getName(MainFactory::create('LanguageCode', new StringType('de')));
+			}
+
 			if (strtolower($orderStatusName) === strtolower($currentOrderStatusName)) {
 				$orderStatusId = $orderStatus->getId();
 				break;
 			}
 		}
-
+		
 		return $orderStatusId;
 	}
 

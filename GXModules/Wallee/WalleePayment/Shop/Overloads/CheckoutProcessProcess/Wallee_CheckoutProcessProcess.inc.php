@@ -148,6 +148,11 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItems[] = $discountLineItem;
         }
 
+        $giftCouponLineItem = $this->getGiftVoucherLineItem();
+        if ($giftCouponLineItem) {
+            $lineItems[] = $giftCouponLineItem;
+        }
+
         $pendingTransaction = new TransactionPending();
         $pendingTransaction->setId($transaction->getId());
         $pendingTransaction->setVersion($transaction->getVersion());
@@ -236,6 +241,39 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItem->setType(LineItemType::DISCOUNT);
             return $lineItem;
         }
+        return null;
+    }
+
+    /**
+     * @return LineItemCreate|null
+     */
+    private function getGiftVoucherLineItem(): ?LineItemCreate
+    {
+        $orderTotals = $GLOBALS['order_totals'] ?? null;
+        if (empty($orderTotals)) {
+            return null;
+        }
+
+        $customerCredit = null;
+        foreach ($orderTotals as $orderItem) {
+            if ($orderItem['code'] === 'ot_gv') {
+                $customerCredit = $orderItem;
+                break;
+            }
+        }
+
+        if ($customerCredit) {
+            $amount = $customerCredit['value'];
+            $lineItem = new LineItemCreate();
+            $lineItem->setName('Gift Voucher');
+            $lineItem->setUniqueId('gift-voucher-' . $amount);
+            $lineItem->setSku('gift-voucher-' . $amount);
+            $lineItem->setQuantity(1);
+            $lineItem->setAmountIncludingTax(-1 * $amount);
+            $lineItem->setType(LineItemType::DISCOUNT);
+            return $lineItem;
+        }
+
         return null;
     }
 

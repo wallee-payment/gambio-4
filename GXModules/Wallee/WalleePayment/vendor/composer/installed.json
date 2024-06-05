@@ -54,6 +54,10 @@
                 "sdk",
                 "wallee"
             ],
+            "support": {
+                "source": "https://github.com/wallee-payment/php-sdk/tree/3.2.0",
+                "issues": "https://github.com/wallee-payment/php-sdk/issues"
+            },
             "install-path": "../wallee/sdk"
         }
     ],

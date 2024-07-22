@@ -237,7 +237,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItem->setUniqueId('coupon-' . $GLOBALS['ot_coupon']->coupon_code);
             $lineItem->setSku('coupon-' . $GLOBALS['ot_coupon']->coupon_code);
             $lineItem->setQuantity(1);
-            $lineItem->setAmountIncludingTax(round($xtPrice->xtcFormat($GLOBALS['ot_coupon']->output['0']['value'], false)));
+            $lineItem->setAmountIncludingTax($xtPrice->xtcFormat($GLOBALS['ot_coupon']->output['0']['value'], false));
             $lineItem->setType(LineItemType::DISCOUNT);
             return $lineItem;
         }

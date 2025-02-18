@@ -32,12 +32,12 @@ class WalleeModuleCenterModuleController extends AbstractModuleCenterModuleContr
 		$template = $this->getTemplateFile('wallee/WalleePayment/Admin/Html/wallee_configuration.html');
 		$integrations = [
 			[
-				'id' => 'iframe',
-				'name' => $this->languageTextManager->get_text('integration.iframe', 'wallee')
+				'id' => 'payment_page',
+				'name' => $this->languageTextManager->get_text('integration.payment_page', 'wallee'),
 			],
 			[
-				'id' => 'payment_page',
-				'name' => $this->languageTextManager->get_text('integration.payment_page', 'wallee')
+				'id' => 'iframe',
+				'name' => $this->languageTextManager->get_text('integration.iframe', 'wallee')
 			],
 		];
 

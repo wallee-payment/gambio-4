@@ -49,7 +49,7 @@ class WalleeStorage extends ConfigurationStorage
 			self::CONFIG_USER_ID => '',
 			self::CONFIG_APPLICATION_KEY => '',
 			self::CONFIG_SPACE_VIEW_ID => 0,
-			self::CONFIG_INTEGRATION => 'iframe',
+			self::CONFIG_INTEGRATION => 'payment_page',
 			self::CONFIG_LINE_ITEM_CONSISTENCY => 1,
 			self::CONFIG_SEND_ORDER_CONFIRMATION => 1,
 			self::CONFIG_INVOICE_DOWNLOAD => 1,

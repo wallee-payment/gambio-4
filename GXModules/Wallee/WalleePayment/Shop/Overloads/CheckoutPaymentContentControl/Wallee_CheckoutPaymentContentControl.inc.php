@@ -2,6 +2,7 @@
 
 use GXModules\WalleePayment\Library\{Core\Settings\Options\Integration, Core\Settings\Struct\Settings};
 use Wallee\Sdk\Model\{AddressCreate, Transaction, TransactionCreate};
+use GXModules\WalleePayment\Library\Helper\WalleeHelper;
 
 class Wallee_CheckoutPaymentContentControl extends Wallee_CheckoutPaymentContentControl_parent
 {
@@ -10,7 +11,7 @@ class Wallee_CheckoutPaymentContentControl extends Wallee_CheckoutPaymentContent
 	    $settings = new Settings();
 	    $createdTransaction = $this->createRemoteTransaction($settings);
 	    $_SESSION['createdTransactionId'] = $createdTransaction->getId();
-		
+
 		$_SESSION['gm_error_message'] = $this->getErrorMessage();
 		return parent::proceed();
     }
@@ -38,7 +39,7 @@ class Wallee_CheckoutPaymentContentControl extends Wallee_CheckoutPaymentContent
 
 	    return $transaction->getUserFailureMessage();
     }
-	
+
 	private function createRemoteTransaction(Settings $settings): Transaction
 	{
 		$lineItems = [];
@@ -54,38 +55,38 @@ class Wallee_CheckoutPaymentContentControl extends Wallee_CheckoutPaymentContent
 		]);
 		$transactionPayload->setSpaceViewId($settings->getSpaceViewId());
 		$transactionPayload->setAutoConfirmationEnabled(getenv('WALLEE_AUTOCONFIRMATION_ENABLED') ?: false);
-		
+
 		if ($settings->getIntegration() === Integration::PAYMENT_PAGE) {
-			$paymentMethodConfigurationId = $this->getPaymentMethodConfigurationId();
+			$paymentMethodConfigurationId = WalleeHelper::getPaymentMethodConfigurationId();
 			if ($paymentMethodConfigurationId) {
 				$transactionPayload->setAllowedPaymentMethodConfigurations([$paymentMethodConfigurationId]);
 			}
 		}
-		
+
 		$transactionPayload->setSuccessUrl(xtc_href_link(FILENAME_CHECKOUT_SUCCESS, '', 'SSL'));
 		$transactionPayload->setFailedUrl(xtc_href_link(FILENAME_CHECKOUT_PAYMENT . '?payment_error', '', 'SSL'));
 		$createdTransaction = $settings->getApiClient()->getTransactionService()->create($settings->getSpaceId(), $transactionPayload);
-		
+
 		return $createdTransaction;
 	}
-	
+
 	private function getBillingAddress(): AddressCreate
 	{
 		$billingAddress = new AddressCreate();
 		$billingAddress->setCountry($_SESSION['customer_country_iso']);
 		$billingAddress->setFamilyName($_SESSION['customer_last_name']);
 		$billingAddress->setGivenName($_SESSION['customer_first_name']);
-		
+
 		return $billingAddress;
 	}
-	
+
 	private function getShippingAddress(): AddressCreate
 	{
 		$shippingAddress = new AddressCreate();
 		$shippingAddress->setCountry($_SESSION['customer_country_iso']);
 		$shippingAddress->setFamilyName($_SESSION['customer_last_name']);
 		$shippingAddress->setGivenName($_SESSION['customer_first_name']);
-		
+
 		return $shippingAddress;
 	}
 }

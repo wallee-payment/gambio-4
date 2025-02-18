@@ -23,6 +23,7 @@ class Wallee_CheckoutSuccessContentControl extends Wallee_CheckoutSuccessContent
 		}
 
 		parent::proceed();
+		return;
 	}
 
 	public function reset()

@@ -14,6 +14,7 @@ class Settings {
 	public const SHOP_SYSTEM = 'x-meta-shop-system';
 	public const SHOP_SYSTEM_VERSION = 'x-meta-shop-system-version';
 	public const SHOP_SYSTEM_AND_VERSION = 'x-meta-shop-system-and-version';
+	public const PLUGIN_SYSTEM_VERSION = 'x-meta-plugin-version';
 
     /**
 	 * @var \Wallee\Sdk\ApiClient
@@ -283,6 +284,7 @@ class Settings {
 			self::SHOP_SYSTEM             => 'gambio',
 			self::SHOP_SYSTEM_VERSION     => $shop_version,
 			self::SHOP_SYSTEM_AND_VERSION => 'gambio-' . $major_version . '.' . $minor_version,
+			self::PLUGIN_SYSTEM_VERSION   => '1.0.26',
 		];
 	}
 }

@@ -57,7 +57,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.26/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.wallee.com/wallee-payment/gambio-4/1.0.27/docs/en/documentation.html)
 
 ## License
 

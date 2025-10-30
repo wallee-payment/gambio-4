@@ -284,7 +284,7 @@ class Settings {
 			self::SHOP_SYSTEM             => 'gambio',
 			self::SHOP_SYSTEM_VERSION     => $shop_version,
 			self::SHOP_SYSTEM_AND_VERSION => 'gambio-' . $major_version . '.' . $minor_version,
-			self::PLUGIN_SYSTEM_VERSION   => '1.0.26',
+			self::PLUGIN_SYSTEM_VERSION   => '1.0.27',
 		];
 	}
 }

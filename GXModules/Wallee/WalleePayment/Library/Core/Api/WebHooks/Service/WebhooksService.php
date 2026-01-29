@@ -13,6 +13,7 @@ use Wallee\Sdk\{Model\CreationEntityState,
 	Model\TransactionState,
 	Model\WebhookListener,
 	Model\WebhookListenerCreate,
+	Model\WebhookListenerUpdate,
 	Model\WebhookUrl,
 	Model\WebhookUrlCreate};
 use WalleeStorage;
@@ -147,7 +148,24 @@ class WebHooksService
 	 */
 	public function install(): array
 	{
-		return $this->installListeners();
+		$listeners = $this->installListeners();
+		// If webhook creation from the admin backend is triggered, but webhooks are already pre-created in the portal, make sure to update the webhooks to use the signature.
+		$this->updateListenersToEnableSignatureAndState();
+		$this->configuration->set('enforce_webhook_signature', 1);
+		return $listeners;
+	}
+
+	/**
+	 * Update WebHooks to use signature
+	 *
+	 * @throws \Wallee\Sdk\ApiException
+	 * @throws \Wallee\Sdk\Http\ConnectionException
+	 * @throws \Wallee\Sdk\VersioningException
+	 */
+	public function update(): void
+	{
+		$this->updateListenersToEnableSignatureAndState();
+		$this->configuration->set('enforce_webhook_signature', 1);
 	}
 
 	/**
@@ -177,7 +195,8 @@ class WebHooksService
 					->setNotifyEveryChange($data['notifyEveryChange'])
 					->setState(CreationEntityState::CREATE)
 					->setEntityStates($data['states'])
-					->setUrl($webHookUrlId);
+					->setUrl($webHookUrlId)
+					->setEnablePayloadSignatureAndState(true);
 
 				$returnValue[] = $this->settings->getApiClient()->getWebhookListenerService()->create($this->settings->getSpaceId(), $entity);
 			}
@@ -186,6 +205,28 @@ class WebHooksService
 		}
 
 		return $returnValue;
+	}
+
+	/**
+	 * Update Listeners to enable signature use
+	 *
+	 * @return array
+	 */
+	protected function updateListenersToEnableSignatureAndState(): void
+	{
+		$returnValue = [];
+		$webHookUrlId = $this->getOrCreateWebHookUrl()->getId();
+		$installedListeners = $this->getInstalledWebHookListeners($webHookUrlId);
+		foreach ($installedListeners as $listener) {
+			if (!$listener->getEnablePayloadSignatureAndState()) {
+				$updatedListener = (new WebhookListenerUpdate())
+					->setId($listener->getId())
+					->setVersion($listener->getVersion())
+					->setEnablePayloadSignatureAndState(true);
+
+				$returnValue[] = $this->settings->getApiClient()->getWebhookListenerService()->update($this->settings->getSpaceId(), $updatedListener);
+			}
+		}
 	}
 
 	/**
@@ -250,8 +291,23 @@ class WebHooksService
 	 */
 	protected function getWebHookCallBackUrl(): string
 	{
-		$shopUrl = xtc_catalog_href_link("shop.php", 'do=WalleeWebhook/Index');
-		return $shopUrl;
+		if (\function_exists('xtc_catalog_href_link')) {
+			return \xtc_catalog_href_link("shop.php", 'do=WalleeWebhook/Index');
+		}
+		// Fallback, as xtc_catalog_href_link() is not loaded in transaction creation context
+		if (\defined('HTTP_SERVER')
+			&& \defined('HTTPS_CATALOG_SERVER')
+			&& \defined('DIR_WS_CATALOG')
+			&& \defined('ENABLE_SSL_CATALOG')) {
+			return \get_href_link(HTTP_SERVER, HTTPS_CATALOG_SERVER, DIR_WS_CATALOG,
+				ENABLE_SSL_CATALOG === 'true' || ENABLE_SSL_CATALOG === true, "shop.php", 'do=WalleeWebhook/Index');
+		}
+
+		$url = 'https://' . $_SERVER['HTTP_HOST'];
+		if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
+			$url = 'http://' . $_SERVER['HTTP_HOST'];
+		}
+		return $url . '/shop.php?do=WalleeWebhook/Index';
 	}
 
 	/**

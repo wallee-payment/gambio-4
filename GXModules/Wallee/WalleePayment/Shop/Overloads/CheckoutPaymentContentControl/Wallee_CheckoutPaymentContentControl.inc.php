@@ -1,6 +1,6 @@
 <?php
 
-use GXModules\WalleePayment\Library\{Core\Settings\Options\Integration, Core\Settings\Struct\Settings};
+use GXModules\WalleePayment\Library\{Core\Settings\Options\Integration, Core\Settings\Struct\Settings, Core\Api\WebHooks\Service\WebhooksService};
 use Wallee\Sdk\Model\{AddressCreate, Transaction, TransactionCreate};
 use GXModules\WalleePayment\Library\Helper\WalleeHelper;
 
@@ -9,12 +9,29 @@ class Wallee_CheckoutPaymentContentControl extends Wallee_CheckoutPaymentContent
     public function proceed()
     {
 	    $settings = new Settings();
+		$this->updateWebhooksSignature($settings);
 	    $createdTransaction = $this->createRemoteTransaction($settings);
 	    $_SESSION['createdTransactionId'] = $createdTransaction->getId();
 
 		$_SESSION['gm_error_message'] = $this->getErrorMessage();
 		return parent::proceed();
     }
+
+	/**
+	 * We update webhooks to use signature
+	 * 
+     * @throws \Wallee\Sdk\ApiException
+     * @throws \Wallee\Sdk\Http\ConnectionException
+     * @throws \Wallee\Sdk\VersioningException
+     */
+	private function updateWebhooksSignature(Settings $settings): void
+	{
+		if (!$settings->isWebhookSignatureEnabled() && !empty($settings->getUserId()) 
+			&& !empty($settings->getSpaceId()) && !empty($settings->getApplicationKey())) {
+			$webHooksService = new WebHooksService(MainFactory::create('WalleeStorage'));
+			$webHooksService->update();
+		}
+	}
 
     /**
      * @return string

@@ -17,6 +17,7 @@ class WalleeStorage extends ConfigurationStorage
 	const CONFIG_SEND_ORDER_CONFIRMATION = 'send_order_confirmation_email';
 	const CONFIG_INVOICE_DOWNLOAD = 'invoice_download';
 	const CONFIG_PAYMENT_METHODS = 'payment_methods';
+	const CONFIG_ENFORCE_WEBHOOK_SIGNATURE = 'enforce_webhook_signature';
 
 	/**
 	 * namespace inside the configuration storage
@@ -53,6 +54,7 @@ class WalleeStorage extends ConfigurationStorage
 			self::CONFIG_LINE_ITEM_CONSISTENCY => 1,
 			self::CONFIG_SEND_ORDER_CONFIRMATION => 1,
 			self::CONFIG_INVOICE_DOWNLOAD => 1,
+			self::CONFIG_ENFORCE_WEBHOOK_SIGNATURE => 0,
 		];
 	}
 
@@ -96,10 +98,11 @@ class WalleeStorage extends ConfigurationStorage
 	public function set($p_key, $p_value)
 	{
 		switch ($p_key) {
-			case self::CONFIG_ACTIVE;
-			case self::CONFIG_LINE_ITEM_CONSISTENCY;
-			case self::CONFIG_SEND_ORDER_CONFIRMATION;
-			case self::CONFIG_INVOICE_DOWNLOAD;
+			case self::CONFIG_ACTIVE:
+			case self::CONFIG_LINE_ITEM_CONSISTENCY:
+			case self::CONFIG_SEND_ORDER_CONFIRMATION:
+			case self::CONFIG_INVOICE_DOWNLOAD:
+			case self::CONFIG_ENFORCE_WEBHOOK_SIGNATURE:
 				$value = (bool)$p_value ? '1' : '0';
 				break;
 			case self::CONFIG_VERSION:

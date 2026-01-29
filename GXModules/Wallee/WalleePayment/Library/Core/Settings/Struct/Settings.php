@@ -64,6 +64,13 @@ class Settings {
 	protected $storefrontInvoiceDownloadEnabled;
 
 	/**
+	 * Enforce signature usage for webhook listeners
+	 *
+	 * @var bool
+	 */
+	protected $webhookSignatureEnabled;
+
+	/**
 	 * Space Id
 	 *
 	 * @var int
@@ -102,6 +109,23 @@ class Settings {
 		$this->setLineItemConsistencyEnabled((bool) $configuration->get('line_item_consistency'));
 		$this->setConfirmationEmailSendEnabled((bool) $configuration->get('send_order_confirmation_email'));
 		$this->setStorefrontInvoiceDownloadEnabled((bool) $configuration->get('invoice_download'));
+		$this->setWebhookSignatureEnabled((bool) $configuration->get('enforce_webhook_signature'));
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isWebhookSignatureEnabled(): bool
+	{
+		return boolval($this->webhookSignatureEnabled);
+	}
+
+	/**
+	 * @param bool $webhookSignatureEnabled
+	 */
+	protected function setWebhookSignatureEnabled(bool $webhookSignatureEnabled): void
+	{
+		$this->webhookSignatureEnabled = $webhookSignatureEnabled;
 	}
 
 	/**
@@ -284,7 +308,7 @@ class Settings {
 			self::SHOP_SYSTEM             => 'gambio',
 			self::SHOP_SYSTEM_VERSION     => $shop_version,
 			self::SHOP_SYSTEM_AND_VERSION => 'gambio-' . $major_version . '.' . $minor_version,
-			self::PLUGIN_SYSTEM_VERSION   => '1.0.27',
+			self::PLUGIN_SYSTEM_VERSION   => '1.0.28',
 		];
 	}
 }

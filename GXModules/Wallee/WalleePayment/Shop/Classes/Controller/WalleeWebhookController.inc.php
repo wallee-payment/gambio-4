@@ -44,7 +44,20 @@ class WalleeWebhookController extends HttpViewController
 
 	public function actionIndex()
 	{
-		$data = $this->_getParsedBody();
+		$rawRequestBody = file_get_contents('php://input');
+		$signatureHeader = $_SERVER['HTTP_X_SIGNATURE'] ?? '';
+
+		if ($this->configuration->get('enforce_webhook_signature')) {
+			if (empty($signatureHeader)) {
+				return new JsonHttpControllerResponse(['Missing webhook signature'], ['HTTP/1.1 400 Bad Request']);
+			}
+			$encryptionService = $this->settings->getApiClient()->getWebhookEncryptionService();
+			if (!$encryptionService->isContentValid($signatureHeader, $rawRequestBody)) {
+				return new JsonHttpControllerResponse(['Invalid webhook signature'], ['HTTP/1.1 401 Unauthorized']);
+			}
+		}
+
+		$data = $this->_getParsedBody($rawRequestBody);
 		$listenerEntityTechnicalName = $data['listenerEntityTechnicalName'] ?? null;
 
 		switch ($listenerEntityTechnicalName) {
@@ -56,7 +69,7 @@ class WalleeWebhookController extends HttpViewController
 				$orderId = (int)$transaction->getMetaData()['orderId'];
 
 				if (empty($orderId)) {
-					return new JsonHttpControllerResponse(['Transaction was not updated updated, because not orderId is not provided in this state']);
+					return new JsonHttpControllerResponse(['Transaction was not updated, because not orderId is not provided in this state']);
 				}
 
 				$this->updateTransaction($transaction, $orderId);
@@ -299,9 +312,9 @@ class WalleeWebhookController extends HttpViewController
 	 *
 	 * @return array
 	 */
-	private function _getParsedBody(): array
+	private function _getParsedBody(string $rawRequestBody): array
 	{
-		return json_decode(file_get_contents('php://input'), true);
+		return json_decode($rawRequestBody, true);
 	}
 
 }

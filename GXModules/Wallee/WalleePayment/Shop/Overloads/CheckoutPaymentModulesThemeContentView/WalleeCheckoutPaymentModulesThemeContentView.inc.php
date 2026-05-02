@@ -160,12 +160,12 @@ class WalleeCheckoutPaymentModulesThemeContentView extends WalleeCheckoutPayment
             $lineItem->setUniqueId($product['id']);
             $lineItem->setSku($product['id']);
             $lineItem->setQuantity($product['qty']);
-            $lineItem->setAmountIncludingTax(floatval((string)$product['final_price']));
+            $lineItem->setAmountIncludingTax(round(floatval((string)$product['final_price']), 2));
             $lineItem->setType(LineItemType::PRODUCT);
             $lineItems[] = $lineItem;
         }
 
-        $shippingCost = floatval((string)$order['info']['shipping_cost']);
+        $shippingCost = round((float)$order['info']['shipping_cost'], 2);
         if ($shippingCost > 0) {
             $lineItem = new LineItemCreate();
             $lineItem->setName('Shipping: ' . $order['info']['shipping_method']);

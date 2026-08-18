@@ -160,7 +160,7 @@ class WalleeCheckoutPaymentModulesThemeContentView extends WalleeCheckoutPayment
             $lineItem->setUniqueId($product['id']);
             $lineItem->setSku($product['id']);
             $lineItem->setQuantity($product['qty']);
-            $lineItem->setAmountIncludingTax(round(floatval((string)$product['final_price']), 2));
+            $lineItem->setAmountIncludingTax(round((float)$product['final_price'], 2));
             $lineItem->setType(LineItemType::PRODUCT);
             $lineItems[] = $lineItem;
         }

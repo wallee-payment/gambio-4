@@ -86,7 +86,7 @@ class wallee_ORIGIN
         $paymentName = $this->title;
         foreach ($_SESSION['possiblePaymentMethods'] as $paymentMethod) {
             $slug = 'wallee_' . trim(strtolower(WalleeHelper::slugify($paymentMethod->getName())));
-            if ($slug === $_SESSION['choosen_payment_method']) {
+            if ($slug === $_SESSION['chosen_payment_method']) {
                 $paymentName = $paymentMethod->getName();
                 $_SESSION['payment_methods_title'] = $paymentName;
             }

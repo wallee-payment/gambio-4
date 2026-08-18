@@ -133,7 +133,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItem->setUniqueId($product['id']);
             $lineItem->setSku($product['id']);
             $lineItem->setQuantity($product['qty']);
-            $lineItem->setAmountIncludingTax(round(floatval((string)$product['final_price']), 2));
+            $lineItem->setAmountIncludingTax(round((float)$product['final_price'], 2));
             $lineItem->setType(LineItemType::PRODUCT);
             $lineItems[] = $lineItem;
         }
@@ -237,7 +237,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItem->setUniqueId('coupon-' . $GLOBALS['ot_coupon']->coupon_code);
             $lineItem->setSku('coupon-' . $GLOBALS['ot_coupon']->coupon_code);
             $lineItem->setQuantity(1);
-            $lineItem->setAmountIncludingTax(round(($xtPrice->xtcFormat($GLOBALS['ot_coupon']->output['0']['value'], false)), 2));
+            $lineItem->setAmountIncludingTax($xtPrice->xtcFormat($GLOBALS['ot_coupon']->output['0']['value'], false));
             $lineItem->setType(LineItemType::DISCOUNT);
             return $lineItem;
         }
@@ -269,7 +269,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItem->setUniqueId('gift-voucher-' . $amount);
             $lineItem->setSku('gift-voucher-' . $amount);
             $lineItem->setQuantity(1);
-            $lineItem->setAmountIncludingTax(round(-1 * $amount, 2));
+            $lineItem->setAmountIncludingTax(-1 * $amount);
             $lineItem->setType(LineItemType::DISCOUNT);
             return $lineItem;
         }
@@ -321,7 +321,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
                 $settings->getIntegration()
             );
 
-        $chosenPaymentMethod = $_SESSION['choosen_payment_method'];
+        $chosenPaymentMethod = $_SESSION['chosen_payment_method'];
 
         return array_filter($possiblePaymentMethods, function ($possiblePaymentMethod) use ($chosenPaymentMethod) {
             $slug = 'wallee_' . trim(strtolower(WalleeHelper::slugify($possiblePaymentMethod->getName())));

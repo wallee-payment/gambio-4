@@ -120,4 +120,48 @@
 			{/block}
 		{/if}
 	{/block}
+
+	{block name="checkout_payment_modules_selection_validation_script"}
+		<script>
+			(function () {
+				function initPaymentMethodSelectionValidation() {
+					var form = document.getElementById('checkout_payment');
+					if (!form) {
+						return;
+					}
+
+					var submitButton = form.querySelector('input[type="submit"]');
+					if (!submitButton) {
+						return;
+					}
+
+					function hasSelectablePaymentMethods() {
+						return form.querySelectorAll('input[name="payment"][type="radio"]').length > 0;
+					}
+
+					function isPaymentMethodSelected() {
+						return form.querySelectorAll('input[name="payment"][type="radio"]:checked').length > 0;
+					}
+
+					function updateSubmitButtonState() {
+						submitButton.disabled = hasSelectablePaymentMethods() && !isPaymentMethodSelected();
+					}
+
+					form.addEventListener('change', function (event) {
+						if (event.target && event.target.name === 'payment') {
+							updateSubmitButtonState();
+						}
+					});
+
+					updateSubmitButtonState();
+				}
+
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', initPaymentMethodSelectionValidation);
+				} else {
+					initPaymentMethodSelectionValidation();
+				}
+			})();
+		</script>
+	{/block}
 {/block}

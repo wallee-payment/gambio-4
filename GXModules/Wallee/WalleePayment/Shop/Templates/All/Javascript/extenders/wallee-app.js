@@ -142,8 +142,11 @@
          * @param validationResult
          */
         validationCallBack: function (validationResult) {
+            const validationStatusField = document.querySelector(WalleeCheckout.payment_method_handler_status);
             if (validationResult.success) {
-                document.querySelector(this.payment_method_handler_status).value = true;
+                if (validationStatusField) {
+                    validationStatusField.value = true;
+                }
                 WalleeCheckout.handler.submit();
             } else {
                 document.body.scrollTop = 0;
@@ -152,7 +155,9 @@
                 if (validationResult.errors) {
                     WalleeCheckout.showErrors(validationResult.errors);
                 }
-                document.querySelector(this.payment_method_handler_status).value = false;
+                if (validationStatusField) {
+                    validationStatusField.value = false;
+                }
                 WalleeCheckout.activateLoader(false);
             }
         },

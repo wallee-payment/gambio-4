@@ -133,7 +133,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItem->setUniqueId($product['id']);
             $lineItem->setSku($product['id']);
             $lineItem->setQuantity($product['qty']);
-            $lineItem->setAmountIncludingTax(floatval((string)$product['final_price']));
+            $lineItem->setAmountIncludingTax(round(floatval((string)$product['final_price']), 2));
             $lineItem->setType(LineItemType::PRODUCT);
             $lineItems[] = $lineItem;
         }
@@ -210,7 +210,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
      */
     private function getShippingLineItem(array $order): ?LineItemCreate
     {
-        $shippingCost = floatval((string)$order['info']['shipping_cost']);
+        $shippingCost = round((float)$order['info']['shipping_cost'], 2);
         if ($shippingCost > 0) {
             $lineItem = new LineItemCreate();
             $lineItem->setName('Shipping: ' . $order['info']['shipping_method']);
@@ -237,7 +237,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItem->setUniqueId('coupon-' . $GLOBALS['ot_coupon']->coupon_code);
             $lineItem->setSku('coupon-' . $GLOBALS['ot_coupon']->coupon_code);
             $lineItem->setQuantity(1);
-            $lineItem->setAmountIncludingTax($xtPrice->xtcFormat($GLOBALS['ot_coupon']->output['0']['value'], false));
+            $lineItem->setAmountIncludingTax(round(($xtPrice->xtcFormat($GLOBALS['ot_coupon']->output['0']['value'], false)), 2));
             $lineItem->setType(LineItemType::DISCOUNT);
             return $lineItem;
         }
@@ -269,7 +269,7 @@ class Wallee_CheckoutProcessProcess extends Wallee_CheckoutProcessProcess_parent
             $lineItem->setUniqueId('gift-voucher-' . $amount);
             $lineItem->setSku('gift-voucher-' . $amount);
             $lineItem->setQuantity(1);
-            $lineItem->setAmountIncludingTax(-1 * $amount);
+            $lineItem->setAmountIncludingTax(round(-1 * $amount, 2));
             $lineItem->setType(LineItemType::DISCOUNT);
             return $lineItem;
         }

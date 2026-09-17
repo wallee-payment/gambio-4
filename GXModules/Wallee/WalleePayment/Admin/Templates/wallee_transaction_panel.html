@@ -9,8 +9,8 @@
         <button {if $transactionState !== $authorizedState}disabled{/if} id="complete" class="btn changeTransactionStatus">{$txt.transaction_complete}</button>
         <button {if $transactionState !== $authorizedState}disabled{/if} id="cancel" class="btn changeTransactionStatus">{$txt.transaction_cancel}</button>
         <button {if $showButtonsAfterFullfill}disabled{/if} id="refund" class="btn">{$txt.refunds}</button>
-        <button {if $showButtonsAfterFullfill}disabled{/if} target="_blank" class="btn" onclick="window.open('/admin/admin.php?do=WalleeOrderAction/DownloadFile&orderId={$orderId}&action=invoice', '_blank');">{$txt.download_invoice}</button>
-        <button {if $showButtonsAfterFullfill}disabled{/if} target="_blank" class="btn" onclick="window.open('/admin/admin.php?do=WalleeOrderAction/DownloadFile&orderId={$orderId}&action=package-slip', '_blank');">{$txt.download_package_slip}</button>
+        <button {if $showButtonsAfterFullfill}disabled{/if} target="_blank" class="btn" onclick="window.open('/admin/admin.php?do=WalleeOrderAction/DownloadFile&orderId={$orderId}&action=invoice&pageToken={$pageToken}', '_blank');">{$txt.download_invoice}</button>
+        <button {if $showButtonsAfterFullfill}disabled{/if} target="_blank" class="btn" onclick="window.open('/admin/admin.php?do=WalleeOrderAction/DownloadFile&orderId={$orderId}&action=package-slip&pageToken={$pageToken}', '_blank');">{$txt.download_package_slip}</button>
     </div>
     <div id="refund-form">
 
@@ -94,5 +94,6 @@
     </div>
 </div>
 <input id="orderId" type="hidden" value="{$orderId}"/>
+<input id="pageToken" type="hidden" value="{$pageToken}"/>
 
 <script src="/GXModules/Wallee/WalleePayment/Admin/Javascripts/wallee_transaction_panel.js"></script>

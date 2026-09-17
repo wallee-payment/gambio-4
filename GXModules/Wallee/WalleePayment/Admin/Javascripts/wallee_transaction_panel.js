@@ -18,7 +18,8 @@ $(function() {
             type: "post",
             data: {
                 'orderId': $('#orderId').val(),
-                'action': action
+                'action': action,
+                'pageToken': $('#pageToken').val()
             }
         });
 
@@ -37,8 +38,13 @@ $(function() {
             return false;
         });
 
-        request.fail(function () {
+        request.fail(function (jqXHR, textStatus) {
+            loader.hide();
             $button.prop("disabled", false);
+
+            if (textStatus !== "abort") {
+                alert(jqXHR.responseText || "An error appear during this action.");
+            }
         });
     });
 
@@ -65,7 +71,8 @@ $(function() {
             type: "post",
             data: {
                 'orderId': $('#orderId').val(),
-                'amount': $('#refund-amount').val()
+                'amount': $('#refund-amount').val(),
+                'pageToken': $('#pageToken').val()
             }
         });
 
@@ -84,8 +91,13 @@ $(function() {
             return false;
         });
 
-        request.fail(function (jqXHR, textStatus, errorThrown){
+        request.fail(function (jqXHR, textStatus){
+            loader.hide();
             $button.prop("disabled", false);
+
+            if (textStatus !== "abort") {
+                alert(jqXHR.responseText || "An error appear during this action.");
+            }
         });
     });
 });

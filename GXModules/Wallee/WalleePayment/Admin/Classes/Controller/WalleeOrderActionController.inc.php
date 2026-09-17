@@ -8,6 +8,8 @@
 		Model\TransactionState
 	};
 	
+	use GXModules\Wallee\WalleePayment\Admin\Classes\WalleePageToken;
+	use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeRefundModel;
 	use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeTransactionModel;
 	
 	class WalleeOrderActionController extends AdminHttpViewController
@@ -48,6 +50,10 @@
 		 */
 		public function actionChangeTransactionStatus(): HttpControllerResponse
 		{
+			if ($unauthorizedResponse = $this->getUnauthorizedResponse()) {
+				return $unauthorizedResponse;
+			}
+
 			$orderId = (int)$this->_getPostData('orderId');
 			$action = $this->_getPostData('action');
 			
@@ -87,6 +93,10 @@
 		 */
 		public function actionDownloadFile()
 		{
+			if ($unauthorizedResponse = $this->getUnauthorizedResponse()) {
+				return $unauthorizedResponse;
+			}
+
 			$orderId = (int)$_GET['orderId'];
 			$action = $_GET['action'];
 			$transaction = $this->transactionModel->getByOrderId($orderId);
@@ -150,6 +160,10 @@
 		 */
 		public function actionRefund()
 		{
+			if ($unauthorizedResponse = $this->getUnauthorizedResponse()) {
+				return $unauthorizedResponse;
+			}
+
 			$orderId = (int)$this->_getPostData('orderId');
 			$amount = floatval(str_replace(',', '', $this->_getPostData('amount')));
 			
@@ -160,8 +174,12 @@
 			$transaction = $this->transactionModel->getByOrderId($orderId);
 			$transactionInfo = json_decode($transaction->getData(), true);
 			$transactionAmount = floatval($transactionInfo['info']['total']);
+			$alreadyRefundedAmount = WalleeRefundModel::getTotalRefundsAmount(
+				WalleeRefundModel::getRefunds($orderId)
+			);
+			$refundableAmount = \round($transactionAmount - $alreadyRefundedAmount, 2);
 			
-			if ($amount > $transactionAmount) {
+			if (\round($amount, 2) > $refundableAmount) {
 				return new HttpControllerResponse('Please make sure you are trying to refund correct amount of money');
 			}
 			
@@ -198,15 +216,42 @@
 					\}              # } character
 					/x';
 					preg_match_all($detectJsonPattern, $e->getMessage(), $matches);
-					$jsonErrorMessage = $matches[0][0];
+					$jsonErrorMessage = $matches[0][0] ?? '';
 					$errorData = \json_decode($jsonErrorMessage);
 					
-					return new HttpControllerResponse($errorData->message);
+					return new HttpControllerResponse($errorData->message ?? 'An error appear during this action.');
 				}
 			}
 			
 			return new HttpControllerResponse(
 				sprintf('Transaction should be in state %s', $transactionStateFulfill)
 			);
+		}
+
+		/**
+		 * Returns a 401 response if the request was not sent by a logged in admin from the order
+		 * detail page, null if the request may be executed.
+		 *
+		 * @return HttpControllerResponse|null
+		 */
+		protected function getUnauthorizedResponse(): ?HttpControllerResponse
+		{
+			$pageToken = $_POST['pageToken'] ?? $_GET['pageToken'] ?? null;
+
+			if ($this->isAuthenticatedAdmin() && WalleePageToken::isValid($pageToken)) {
+				return null;
+			}
+
+			return new HttpControllerResponse('Unauthorized', ['HTTP/1.1 401 Unauthorized']);
+		}
+
+		/**
+		 * @return bool
+		 */
+		protected function isAuthenticatedAdmin(): bool
+		{
+			return !empty($_SESSION['customer_id'])
+				&& isset($_SESSION['customers_status']['customers_status_id'])
+				&& (string)$_SESSION['customers_status']['customers_status_id'] === '0';
 		}
 	}

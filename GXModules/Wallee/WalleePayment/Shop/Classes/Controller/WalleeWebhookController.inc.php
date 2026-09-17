@@ -19,6 +19,11 @@ use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeRefundModel;
 class WalleeWebhookController extends HttpViewController
 {
 	/**
+	 * @var WalleeStorage $configuration
+	 */
+	protected $configuration;
+
+	/**
 	 * @var WebhooksService $webHooksService
 	 */
 	protected $webHooksService;
@@ -202,8 +207,15 @@ class WalleeWebhookController extends HttpViewController
 		$languageCode = $languageData['code'] ?? null;
 		if (extension_loaded('intl') && $languageCode) {
 			$order_date = utf8_encode_wrapper(DateFormatter::formatAsFullDate(new DateTime(), new LanguageCode(new StringType($languageCode))));
+		} elseif (extension_loaded('intl')) {
+			$formatter = new IntlDateFormatter(
+				'en_US',
+				IntlDateFormatter::FULL,
+				IntlDateFormatter::NONE
+			);
+			$order_date = utf8_encode_wrapper((string)$formatter->format(new DateTime()));
 		} else {
-			$order_date = utf8_encode_wrapper(strftime(DATE_FORMAT_LONG));
+			$order_date = utf8_encode_wrapper(date('l, d F Y'));
 		}
 
 		$t_subject = gm_get_content('EMAIL_BILLING_SUBJECT_ORDER', $languageData['languages_id']);

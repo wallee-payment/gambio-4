@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Wallee\Sdk\Model\TransactionState;
+use GXModules\Wallee\WalleePayment\Admin\Classes\WalleePageToken;
 use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeTransactionModel;
 use GXModules\Wallee\WalleePayment\Shop\Classes\Model\WalleeRefundModel;
 
@@ -29,6 +30,7 @@ class Wallee_OrderExtender extends Wallee_OrderExtender_parent
 		$transactionInfo = $transactionData ? \json_decode($transactionData, true) : [];
 		$transactionState = $transaction->getState();
 		$contentView->set_content_data('orderId', $orderId);
+		$contentView->set_content_data('pageToken', WalleePageToken::get());
 
 		$refunds = WalleeRefundModel::getRefunds($orderId);
 		$totalRefundsAmount = WalleeRefundModel::getTotalRefundsAmount($refunds);

@@ -15,6 +15,50 @@ defined('GM_HTTP_SERVER') || define('GM_HTTP_SERVER', HTTP_SERVER);
  */
 class wallee_ORIGIN
 {
+    /**
+     * @var string
+     */
+    public $code;
+
+    /**
+     * @var string
+     */
+    public $title;
+
+    /**
+     * @var string
+     */
+    public $description;
+
+    /**
+     * @var int
+     */
+    public $sort_order;
+
+    /**
+     * @var bool
+     */
+    public $enabled;
+
+    /**
+     * @var string
+     */
+    public $info;
+
+    /**
+     * @var int
+     */
+    public $order_status;
+
+    /**
+     * @var int
+     */
+    public $tmpStatus;
+
+    /**
+     * @var int
+     */
+    public $_check;
 
     /**
      * @var LanguageTextManager
